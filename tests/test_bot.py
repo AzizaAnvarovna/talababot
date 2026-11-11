@@ -43,6 +43,11 @@ def markup_rows(markup):
     return [[b.text for b in row] for row in markup.inline_keyboard]
 
 
+def test_descriptions_fit_telegram_limits():
+    assert len(main.DESCRIPTION) <= 512
+    assert len(main.SHORT_DESCRIPTION) <= 120
+
+
 def test_no_buttons_means_no_keyboard():
     assert main.build_keyboard([]) is None
 

@@ -27,6 +27,17 @@ HELP_TEXT = (
     "/help — yordam"
 )
 API_ERROR = "Xatolik yuz berdi. Birozdan soʻng qayta urinib koʻring."
+# Talaba /start bosishidan oldin Telegram'da koʻrinadi (limitlar: 512 va 120 belgi).
+DESCRIPTION = (
+    "Buxoro davlat universiteti talabalari uchun yordamchi bot.\n\n"
+    "Oʻquv jarayoni, stipendiya, yotoqxona, hujjatlar va akademik taʼtil boʻyicha "
+    "savolingizni oddiy matn bilan yozing. Javob topilmasa, murojaatingiz operatorga uzatiladi.\n\n"
+    "Bot magistrlik dissertatsiyasi doirasida sinovdan oʻtkazilmoqda. "
+    "Suhbatlar anonim saqlanadi."
+)
+SHORT_DESCRIPTION = (
+    "Talabalar savollariga javob beruvchi bot: stipendiya, yotoqxona, hujjatlar va boshqa."
+)
 TEXT_ONLY = "Hozircha faqat matnli xabarlarni tushunaman."
 
 router = Router()
@@ -133,6 +144,8 @@ async def run() -> None:
     dispatcher = Dispatcher()
     dispatcher["api"] = api
     dispatcher.include_router(router)
+    await bot.set_my_description(DESCRIPTION)
+    await bot.set_my_short_description(SHORT_DESCRIPTION)
     await bot.set_my_commands(
         [
             BotCommand(command="start", description="Boshlash"),
