@@ -4,6 +4,22 @@ Talabalar murojaatlarini qayta ishlovchi chatbot. Talablar: `docs/TZ (2).md`.
 
 Hozirgi holat: 5-bosqich (modellarni taqqoslash eksperimenti).
 
+## Shu kompyuterda doimiy ishlatish (Windows)
+
+Administrator PowerShell'da bir marta:
+
+```powershell
+.\deploy\windows\install.ps1
+```
+
+Dastur va bot kompyuter yoqilganda Windows'ga kirmasdan ham ishga tushadi, yiqilsa qayta yonadi. Zaxira har kuni 02:30 da `backups/` ga olinadi. Loglar `logs/` papkasida.
+
+- Kod yangilangandan keyin qayta ishga tushirish: `.\deploy\windows\restart.ps1`
+- Holatni ko'rish: `Get-ScheduledTask -TaskPath \TalabaBot\`
+- O'chirish (administrator): `.\deploy\windows\uninstall.ps1`
+
+Universitet serveriga ko'chirishda `talababot.db`, `.env` va `models/` ham olib o'tiladi (`.env` dagi kalitlar o'zgarmasligi shart).
+
 ## Eksperiment
 
 Excel faylni `data/Murojaatlar_yigish_shabloni.xlsx` ga qo'ying. Varaqda "Murojaat" va "Toifa" ustunlari, imlo xatolari uchun "Imlo xatosi" ustuni bo'lishi kerak.

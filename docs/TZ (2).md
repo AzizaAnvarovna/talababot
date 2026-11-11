@@ -211,7 +211,7 @@ Quyidagi taʼriflar “Integral model” maqolasi bilan solishtirilishi kerak; f
 |-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **NFR-2** | Pilot davrida bir vaqtda kamida 50 ta foydalanuvchini qoʻllab-quvvatlash.                                                                                      |
 | **NFR-3** | Admin va operator sahifalari parol bilan himoyalangan; 3-bosqichdan boshlab parollar xeshlangan (1–2-bosqichlarda admin paroli faqat .env da); Telegram token va maxfiy kalitlar .env faylida saqlanadi va GitHub ga yuklanmaydi. |
-| **NFR-4** | Veb-sahifa HTTPS orqali ishlaydi; interfeys tili — oʻzbek (lotin).                                                                                             |
+| **NFR-4** | Veb-sahifa internetga ochilganda HTTPS orqali ishlaydi (muallif kompyuterida panel faqat 127.0.0.1 da ochiladi); interfeys tili — oʻzbek (lotin).                                                                                             |
 | **NFR-5** | Kod sifati: Python 3.11+, Ruff va Black; asosiy modullar (normallashtirish, strategiya, koʻrsatkichlar) uchun pytest testlari, qamrov kamida 70%.              |
 | **NFR-6** | Har kuni maʼlumotlar bazasining zaxira nusxasi olinadi.                                                                                                        |
 
@@ -226,7 +226,7 @@ Quyidagi taʼriflar “Integral model” maqolasi bilan solishtirilishi kerak; f
 | NLP va mashinaviy oʻrganish | scikit-learn, pandas, numpy; Hugging Face transformers, PyTorch                 |
 | Modelni oʻqitish            | Google Colab (GPU)                                                              |
 | Testlash va sifat           | pytest, Ruff, Black, GitHub Actions                                             |
-| Joylashtirish               | VPS yoki universitet serveri (HTTPS bilan); bepul variant — Render yoki Railway |
+| Joylashtirish               | Pilotda muallif kompyuteri (Windows, fon vazifalari); keyin universitet serveri (HTTPS bilan) |
 
 # 7. Maʼlumotlar bazasi
 
@@ -327,4 +327,5 @@ yigʻish (0-bosqich) dasturlash bilan parallel davom etadi.
 | Bilimlar bazasidagi javob eskirgan yoki notoʻgʻri | Faqat tekshirilgan javoblar; har bir javobda masʼul boʻlim; operatorga uzatish                           |
 | Pilotda foydalanuvchilar kam                      | Bot havolasini dekanat va guruh sardorlari orqali tarqatish, QR kod, fakultet Telegram kanallarida eʼlon |
 | Talabalar baholash soʻroviga kam javob beradi     | kS koʻrsatkichi bilan toʻldirish; javob berish ulushini alohida hisobotda koʻrsatish                     |
+| Muallif kompyuteri yoki internet oʻchib qoladi | Kompyuter yoqilganda bot oʻzi ishga tushadi; uzilishlar logda qayd etiladi va dissertatsiyada koʻrsatiladi; universitet serveriga koʻchirish |
 | Transformer model serverda sekin ishlaydi         | Kichikroq model, ONNX formatiga oʻtkazish yoki SVM versiyasini asosiy qilib qoldirish                    |

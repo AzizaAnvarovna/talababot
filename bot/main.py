@@ -153,5 +153,10 @@ async def run() -> None:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
+    # Har bir xabar uchun yozuv logni tez toʻldiradi.
+    logging.getLogger("aiogram.event").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     asyncio.run(run())
