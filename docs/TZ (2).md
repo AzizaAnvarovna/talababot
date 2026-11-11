@@ -203,7 +203,7 @@ Quyidagi taʼriflar “Integral model” maqolasi bilan solishtirilishi kerak; f
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **FR-31** | Taqqoslanadigan modellar: (1) kalit soʻzlarga asoslangan rule-based, (2) TF-IDF + Naive Bayes, (3) TF-IDF + chiziqli SVM, (4) koʻp tilli transformer (XLM-RoBERTa yoki oʻzbekcha BERT) — Google Colab GPU da qoʻshimcha oʻqitiladi. |
 | **FR-32** | Har bir model uchun: accuracy, makro-precision, makro-recall, makro-F1, toifalar boʻyicha hisobot, xatolar matritsasi (rasm), oʻrtacha bashorat vaqti. Natijalar JSON va PNG koʻrinishida saqlanadi.                                |
-| **FR-33** | Kirill yozuvidagi va imlo xatoli murojaatlar boʻyicha alohida baholash (normallashtirishning taʼsirini koʻrsatish uchun: normallashtirish bilan va usiz).                                                                           |
+| **FR-33** | Kirill yozuvidagi va imlo xatoli murojaatlar boʻyicha alohida baholash (normallashtirishning taʼsirini koʻrsatish uchun: normallashtirish bilan va usiz). Kirill yozuvi avtomatik aniqlanadi; imlo xatoli murojaatlar shablondagi “Imlo xatosi” ustunida “Ha” deb belgilanadi.                                                                           |
 
 # 5. Nofunksional talablar
 

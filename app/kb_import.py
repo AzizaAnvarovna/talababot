@@ -31,6 +31,15 @@ def normalize_label(value: object) -> str:
 
 _CATEGORY_BY_LABEL = {normalize_label(name): name for name in CATEGORIES}
 
+
+def canonical_category(value: object) -> str | None:
+    return _CATEGORY_BY_LABEL.get(normalize_label(value))
+
+
+def is_true(value: object) -> bool:
+    return normalize_label(value) in _TRUE_VALUES
+
+
 _COLUMN_ALIASES = {
     "category": {"toifa", "kategoriya"},
     "intent": {"kichik mavzu", "kichik mavzu (intent)", "intent", "mavzu"},

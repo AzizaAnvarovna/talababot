@@ -2,7 +2,21 @@
 
 Talabalar murojaatlarini qayta ishlovchi chatbot. Talablar: `docs/TZ (2).md`.
 
-Hozirgi holat: 4-bosqich (tahlil paneli, AHP, ekspert sahifalari). Modellarni taqqoslash eksperimenti keyingi bosqichda qo'shiladi.
+Hozirgi holat: 5-bosqich (modellarni taqqoslash eksperimenti).
+
+## Eksperiment
+
+Excel faylni `data/Murojaatlar_yigish_shabloni.xlsx` ga qo'ying. Varaqda "Murojaat" va "Toifa" ustunlari, imlo xatolari uchun "Imlo xatosi" ustuni bo'lishi kerak.
+
+```powershell
+.\.venv\Scripts\python.exe -m experiments.train_baselines
+```
+
+Natijalar `experiments/results/` da saqlanadi. Transformer uchun `experiments/colab_transformer.ipynb` ni Google Colab'da oching va ichidagi ko'rsatmaga amal qiling. Natijalarni ilovaga o'tkazish (k1 va SVM modeli, faqat haqiqiy ma'lumotda):
+
+```powershell
+.\.venv\Scripts\python.exe -m experiments.train_baselines --register
+```
 
 Xodim yaratish (parol so'raladi, rollar: `admin`, `operator`, `ekspert`):
 
