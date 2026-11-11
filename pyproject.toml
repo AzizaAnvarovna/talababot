@@ -1,0 +1,19 @@
+[project]
+name = "talababot"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# FastAPI Depends/Form/File qiymatlari funksiya argumenti sifatida beriladi.
+ignore = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

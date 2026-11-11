@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<form method="post" action="{{ action }}" class="bg-white border rounded p-3" style="max-width: 720px">
+  <h1 class="h5 mb-3">Bilimlar bazasi yozuvi</h1>
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+  <label class="form-label" for="category">Toifa</label>
+  <select class="form-select mb-3" id="category" name="category" required>
+    <option value="">Tanlang</option>
+    {% for category in categories %}
+    <option value="{{ category }}" {% if item.category == category %}selected{% endif %}>{{ category }}</option>
+    {% endfor %}
+  </select>
+
+  <label class="form-label" for="intent">Kichik mavzu (intent)</label>
+  <input class="form-control mb-3" id="intent" name="intent" value="{{ item.intent or '' }}" required>
+
+  <label class="form-label" for="questions">Savol namunalari (har biri alohida qatorda)</label>
+  <textarea class="form-control mb-3" id="questions" name="questions" rows="4" required>{{ item.questions or '' }}</textarea>
+
+  <label class="form-label" for="answer">Rasmiy javob</label>
+  <textarea class="form-control mb-3" id="answer" name="answer" rows="5" required>{{ item.answer or '' }}</textarea>
+
+  <label class="form-label" for="source">Havola yoki hujjat</label>
+  <input class="form-control mb-3" id="source" name="source" value="{{ item.source or '' }}">
+
+  <label class="form-label" for="department">Masʼul boʻlim</label>
+  <input class="form-control mb-3" id="department" name="department" value="{{ item.department or '' }}">
+
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" id="verified" name="verified" {% if item.verified %}checked{% endif %}>
+    <label class="form-check-label" for="verified">Tekshirildi (faqat shunda talabaga koʻrsatiladi)</label>
+  </div>
+
+  <button class="btn btn-primary">Saqlash</button>
+  <a class="btn btn-link" href="/admin/kb">Bekor qilish</a>
+</form>
+{% endblock %}
