@@ -22,7 +22,7 @@ Universitet serveriga ko'chirishda `talababot.db`, `.env` va `models/` ham olib 
 
 ## Eksperiment
 
-Excel faylni `data/Murojaatlar_yigish_shabloni.xlsx` ga qo'ying. Varaqda "Murojaat" va "Toifa" ustunlari, imlo xatolari uchun "Imlo xatosi" ustuni bo'lishi kerak.
+Bo'sh shablonni yaratish (mavjud faylni ustidan yozmaydi): `.\.venv\Scripts\python.exe -m experiments.make_template`. Excel faylni `data/Murojaatlar_yigish_shabloni.xlsx` ga qo'ying. Varaqda "Murojaat" va "Toifa" ustunlari, imlo xatolari uchun "Imlo xatosi" ustuni bo'lishi kerak.
 
 ```powershell
 .\.venv\Scripts\python.exe -m experiments.train_baselines
