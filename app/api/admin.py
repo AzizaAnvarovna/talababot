@@ -6,20 +6,14 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.config import get_settings
+from app.auth import HOME_BY_ROLE, LOGIN_URL, authenticate, require_admin
 from app.db.models import KbItem
 from app.db.session import get_db
 from app.kb_import import CATEGORIES, KbImportError, import_workbook
-from app.security import secrets_match
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
 
 _MAX_SKIPPED_SHOWN = 20
-
-
-def require_admin(request: Request) -> None:
-    if not request.session.get("admin"):
-        raise HTTPException(status.HTTP_303_SEE_OTHER, headers={"Location": "/admin/login"})
 
 
 public = APIRouter(prefix="/admin", tags=["admin"])
@@ -36,22 +30,29 @@ def login_page(request: Request):
 
 
 @public.post("/login", response_class=HTMLResponse)
-def login(request: Request, password: str = Form("")):
-    if not secrets_match(password, get_settings().admin_password):
+def login(
+    request: Request,
+    login: str = Form(""),
+    password: str = Form(""),
+    db: Session = Depends(get_db),
+):
+    staff = authenticate(db, login.strip(), password)
+    if staff is None:
         return templates.TemplateResponse(
             request,
             "admin/login.html",
-            {"error": "Parol notoʻgʻri."},
+            {"error": "Login yoki parol notoʻgʻri."},
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
-    request.session["admin"] = True
-    return _redirect("/admin/kb")
+    request.session.clear()
+    request.session["staff_id"] = staff.id
+    return _redirect(HOME_BY_ROLE.get(staff.role, LOGIN_URL))
 
 
-@router.post("/logout")
+@public.post("/logout")
 def logout(request: Request):
     request.session.clear()
-    return _redirect("/admin/login")
+    return _redirect(LOGIN_URL)
 
 
 @router.get("")

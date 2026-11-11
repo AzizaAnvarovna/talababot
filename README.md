@@ -2,7 +2,19 @@
 
 Talabalar murojaatlarini qayta ishlovchi chatbot. Talablar: `docs/TZ (2).md`.
 
-Hozirgi holat: 2-bosqich (NLP yadro). Telegram bot keyingi bosqichda qo'shiladi.
+Hozirgi holat: 3-bosqich (Telegram bot va operator paneli). Tahlil paneli keyingi bosqichda qo'shiladi.
+
+Xodim yaratish (parol so'raladi, rollar: `admin`, `operator`, `ekspert`):
+
+```powershell
+.\.venv\Scripts\python.exe -m app.manage create-staff admin admin
+```
+
+Telegram botni alohida oynada ishga tushirish (`.env` da `TELEGRAM_BOT_TOKEN` bo'lishi kerak):
+
+```powershell
+.\.venv\Scripts\python.exe -m bot.main
+```
 
 SVM modelini bilimlar bazasidagi savol namunalarida o'qitish:
 
@@ -23,7 +35,8 @@ Copy-Item .env.example .env   # keyin .env dagi maxfiy qiymatlarni to'ldiring
 ```
 
 - Veb-chat: http://127.0.0.1:8000/
-- Admin panel: http://127.0.0.1:8000/admin (parol `.env` dagi `ADMIN_PASSWORD`)
+- Admin panel: http://127.0.0.1:8000/admin
+- Operator paneli: http://127.0.0.1:8000/operator
 - API hujjati: http://127.0.0.1:8000/docs
 
 ## Tekshirish

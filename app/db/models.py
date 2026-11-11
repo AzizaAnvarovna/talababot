@@ -61,6 +61,9 @@ class Message(Base):
     latency_ms: Mapped[int | None] = mapped_column(Integer)
     sentiment: Mapped[float | None] = mapped_column(Float)
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # Yetkazilgunicha: shifrlangan asl matn (logda faqat maskalangani qoladi) va tugmalar.
+    outbox_text: Mapped[str | None] = mapped_column(Text)
+    buttons_json: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 

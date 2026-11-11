@@ -114,6 +114,31 @@
     history.forEach(([sender, text]) => draw(sender, text));
     // Tarix tiklangan bo'lsa, "Savolingizni yozing" qayta chiqmasin.
     send({ action: "start" }, history.length === 0);
+
+    // Operator javobi va baholash soʻrovi shu yerdan keladi.
+    let polling = false;
+    async function poll() {
+      if (polling) return;
+      polling = true;
+      try {
+        const response = await fetch("/api/chat/updates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: userId() }),
+        });
+        if (response.ok) {
+          for (const update of await response.json()) {
+            add("bot", update.text);
+            showButtons(update.buttons);
+          }
+        }
+      } catch (e) {
+        // tarmoq uzilsa keyingi urinishda qayta soʻraladi
+      } finally {
+        polling = false;
+      }
+    }
+    setInterval(poll, 2000);
   </script>
 </body>
 </html>

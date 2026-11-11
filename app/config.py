@@ -9,8 +9,10 @@ class Settings(BaseSettings):
     secret_key: str
     user_hash_salt: str
     bot_api_token: str
-    admin_password: str
+    delivery_key: str
 
+    telegram_bot_token: str = ""
+    api_base_url: str = "http://127.0.0.1:8000"
     database_url: str = "sqlite:///./talababot.db"
     cookie_secure: bool = False
     test_mode: bool = True

@@ -1,0 +1,27 @@
+{% extends "operator/base.html" %}
+{% block content %}
+{% if flash %}<div class="alert alert-info">{{ flash }}</div>{% endif %}
+<div style="max-width: 720px">
+  <h1 class="h5">Murojaat #{{ handoff.id }}</h1>
+  <p class="text-secondary">{{ category or "Toifa aniqlanmagan" }} · {{ dialog.channel }}</p>
+  <div class="bg-white border rounded p-3 mb-3">
+    {% for message in messages %}
+    <div class="mb-2">
+      <div class="small text-secondary">{{ message.sender }} · {{ message.created_at.strftime("%H:%M") }}</div>
+      <div style="white-space: pre-line; overflow-wrap: anywhere">{{ message.text_masked }}</div>
+    </div>
+    {% else %}
+    <p class="text-secondary mb-0">Xabarlar yoʻq.</p>
+    {% endfor %}
+  </div>
+  {% if handoff.status == "pending" %}
+  <form method="post" action="/operator/{{ handoff.id }}/reply">
+    <label class="form-label" for="text">Javobingiz</label>
+    <textarea class="form-control mb-2" id="text" name="text" rows="4" maxlength="{{ max_length }}" required></textarea>
+    <button class="btn btn-primary">Yuborish va yopish</button>
+  </form>
+  {% else %}
+  <div class="alert alert-secondary">Bu murojaat yopilgan.</div>
+  {% endif %}
+</div>
+{% endblock %}

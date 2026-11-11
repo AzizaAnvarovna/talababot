@@ -1,3 +1,4 @@
+import re
 from dataclasses import asdict
 from typing import Literal
 
@@ -9,6 +10,7 @@ from app.config import get_settings
 from app.db.session import get_db
 from app.dialog import CATEGORY_ACTION_PREFIX, handle_message
 from app.kb_import import CATEGORIES
+from app.outbox import take_for_web
 from app.security import secrets_match
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
@@ -16,6 +18,7 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 _VALID_ACTIONS = {"start", "consent_yes", "consent_no", "operator", "end"} | {
     f"{CATEGORY_ACTION_PREFIX}{category}" for category in CATEGORIES
 }
+_FEEDBACK_ACTION = re.compile(r"resolved:\d{1,12}:(?:yes|no)|rate:\d{1,12}:[1-5]")
 
 
 class ChatRequest(BaseModel):
@@ -29,7 +32,11 @@ class ChatRequest(BaseModel):
         has_text = bool(self.text and self.text.strip())
         if has_text == (self.action is not None):
             raise ValueError("text yoki action dan aynan bittasi berilishi kerak")
-        if self.action is not None and self.action not in _VALID_ACTIONS:
+        if (
+            self.action is not None
+            and self.action not in _VALID_ACTIONS
+            and not _FEEDBACK_ACTION.fullmatch(self.action)
+        ):
             raise ValueError("Notoʻgʻri action")
         return self
 
@@ -59,3 +66,13 @@ def post_message(
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Ichki token notoʻgʻri")
     reply = handle_message(db, payload.channel, payload.user_id, payload.text, payload.action)
     return asdict(reply)
+
+
+class UpdatesRequest(BaseModel):
+    user_id: str = Field(min_length=1, max_length=128)
+
+
+@router.post("/updates")
+def post_updates(payload: UpdatesRequest, db: Session = Depends(get_db)) -> list[dict]:
+    """Veb-chat operator javoblari va baholash soʻrovlarini shu yerdan oladi."""
+    return take_for_web(db, payload.user_id)

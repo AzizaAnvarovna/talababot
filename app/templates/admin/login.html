@@ -4,8 +4,10 @@
 <form method="post" action="/admin/login" class="mx-auto" style="max-width: 360px">
   <h1 class="h5 mb-3">Kirish</h1>
   {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+  <label class="form-label" for="login">Login</label>
+  <input class="form-control mb-3" id="login" name="login" autocomplete="username" required autofocus>
   <label class="form-label" for="password">Parol</label>
-  <input class="form-control mb-3" id="password" name="password" type="password" required autofocus>
+  <input class="form-control mb-3" id="password" name="password" type="password" autocomplete="current-password" required>
   <button class="btn btn-primary w-100">Kirish</button>
 </form>
 {% endblock %}

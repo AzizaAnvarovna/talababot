@@ -4,6 +4,7 @@ import pytest
 from openpyxl import Workbook
 from sqlalchemy import select
 
+from app.auth import create_or_update_staff
 from app.db.models import KbItem
 
 HEADERS = [
@@ -67,14 +68,19 @@ def test_admin_requires_login(client, method, path):
     assert response.headers["location"] == "/admin/login"
 
 
-def test_wrong_password_is_rejected(client):
-    response = client.post("/admin/login", data={"password": "no"}, follow_redirects=False)
+def test_wrong_password_is_rejected(client, db_session):
+    create_or_update_staff(db_session, "admin", "correct-password", "admin")
+    response = client.post(
+        "/admin/login", data={"login": "admin", "password": "no"}, follow_redirects=False
+    )
     assert response.status_code == 401
     assert client.get("/admin/kb", follow_redirects=False).status_code == 303
 
 
 def test_non_ascii_password_does_not_crash(client):
-    response = client.post("/admin/login", data={"password": "oʻ"}, follow_redirects=False)
+    response = client.post(
+        "/admin/login", data={"login": "oʻ", "password": "oʻ"}, follow_redirects=False
+    )
     assert response.status_code == 401
 
 

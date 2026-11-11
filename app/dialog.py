@@ -1,12 +1,13 @@
-"""Kanaldan mustaqil dialog mantigʻi (FR-3, FR-4, FR-10 – FR-14)."""
+"""Kanaldan mustaqil dialog mantigʻi (FR-3, FR-4, FR-10 – FR-14, FR-18 – FR-22)."""
 
+import json
 import random
 import re
 import time
-from dataclasses import dataclass, field
-from datetime import timedelta
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -16,12 +17,14 @@ from app.nlp.classifier import get_classifier
 from app.nlp.masking import mask_pii
 from app.nlp.normalizer import normalize
 from app.nlp.retriever import best_match
+from app.nlp.sentiment import score as sentiment_score
 from app.nlp.strategy import Decision, decide
-from app.security import hash_user_id
+from app.security import encrypt, hash_user_id
 from app.settings_store import RuntimeSettings, load_settings, load_slang
 
 CATEGORY_ACTION_PREFIX = "category:"
 CONTEXT_TTL = timedelta(minutes=10)
+INACTIVITY_LIMIT = timedelta(minutes=10)
 
 CONSENT_NOTICE = (
     "Assalomu alaykum! Men TalabaBot — talabalar murojaatlari boʻyicha yordamchiman.\n\n"
@@ -31,10 +34,16 @@ WELCOME = "Savolingizni yozing."
 HANDED_OFF = "Murojaatingiz operatorga uzatildi. Javobni shu yerda olasiz."
 ALREADY_HANDED_OFF = "Murojaatingiz allaqachon operatorga uzatilgan."
 NOT_UNDERSTOOD = "Kechirasiz, savolingizni tushuna olmadim. Murojaatingiz operatorga uzatildi."
-ENDED = "Suhbat yakunlandi. Murojaatingiz uchun rahmat!"
+WAITING_FOR_OPERATOR = "Murojaatingiz operatorda. Javobni shu yerda olasiz."
+END_PROMPT = "Suhbat yakunlandi. Muammoingiz hal boʻldimi?"
+RATE_PROMPT = "Xizmatni 1 dan 5 gacha baholang."
+THANKS = "Rahmat! Yangi savolingiz boʻlsa, yozishingiz mumkin."
 NO_ACTIVE_DIALOG = "Faol suhbat yoʻq. Savolingizni yozishingiz mumkin."
+YOU_ARE_WELCOME = "Arzimaydi! Yangi savolingiz boʻlsa, yozishingiz mumkin."
 
 _OPERATOR_WORD = re.compile(r"(?<!\w)operator")
+_CLOSING_WORDS = frozenset({"rahmat", "raxmat", "tashakkur", "xayr"})
+_CLOSING_FILLERS = frozenset({"katta", "juda", "koʻp", "kop", "sizga", "sizlarga", "kattakon"})
 
 
 @dataclass
@@ -56,13 +65,23 @@ END_BUTTON = Button("Yakunlash", "end")
 DIALOG_BUTTONS = [Button("Operator", "operator"), END_BUTTON]
 
 
+def _resolved_buttons(dialog_id: int) -> list[Button]:
+    return [Button("Ha", f"resolved:{dialog_id}:yes"), Button("Yoʻq", f"resolved:{dialog_id}:no")]
+
+
+def _rate_buttons(dialog_id: int) -> list[Button]:
+    return [Button(str(score), f"rate:{dialog_id}:{score}") for score in range(1, 6)]
+
+
 def _get_or_create_user(db: Session, channel: str, user_id: str) -> User:
     user_hash = hash_user_id(channel, user_id)
     query = select(User).where(User.user_hash == user_hash)
     user = db.scalar(query)
     if user is not None:
         return user
-    user = User(user_hash=user_hash, channel=channel)
+    # Telegramda shaxsiy chat ID si foydalanuvchi ID si bilan bir xil.
+    delivery_ref = encrypt(user_id) if channel == "telegram" else None
+    user = User(user_hash=user_hash, channel=channel, delivery_ref=delivery_ref)
     db.add(user)
     try:
         db.commit()
@@ -197,16 +216,44 @@ def _previous_was_clarify(db: Session, dialog: Dialog) -> bool:
     return last is not None and last.response_type == "clarify"
 
 
+def _student_message(dialog: Dialog, masked: str, query: str, **fields) -> Message:
+    return Message(
+        dialog_id=dialog.id,
+        sender="talaba",
+        text_masked=masked,
+        text_norm=query,
+        sentiment=sentiment_score(query),
+        **fields,
+    )
+
+
+def _is_closing(query: str) -> bool:
+    tokens = set(re.findall(r"\w+", query))
+    return bool(tokens & _CLOSING_WORDS) and tokens <= _CLOSING_WORDS | _CLOSING_FILLERS
+
+
 def _answer_question(db: Session, user: User, text: str) -> Reply:
     started = time.perf_counter()
     settings = load_settings(db)
     slang = load_slang(db)
-    dialog = _open_dialog(db, user, settings)
     masked = mask_pii(text)
     query = normalize(masked, slang)
 
+    active = _active_dialog(db, user)
+    if active is not None and active.handed_off:
+        db.add(_student_message(active, masked, query))
+        _log_bot(db, active, WAITING_FOR_OPERATOR, "operator", started)
+        db.commit()
+        return Reply(WAITING_FOR_OPERATOR, "operator", active.id, [END_BUTTON])
+    if _is_closing(query):
+        if active is None:
+            return Reply(YOU_ARE_WELCOME, "system")
+        db.add(_student_message(active, masked, query))
+        return _finish(db, active, "closing")
+
+    dialog = _open_dialog(db, user, settings)
     if _OPERATOR_WORD.search(query):
-        db.add(Message(dialog_id=dialog.id, sender="talaba", text_masked=masked, text_norm=query))
+        db.add(_student_message(dialog, masked, query))
         return _hand_off(db, dialog, started)
 
     ranked = get_classifier(dialog.model_version).predict(query)
@@ -219,16 +266,7 @@ def _answer_question(db: Session, user: User, text: str) -> Reply:
         _previous_was_clarify(db, dialog),
         lambda q, category: best_match(db, q, category, slang),
     )
-    db.add(
-        Message(
-            dialog_id=dialog.id,
-            sender="talaba",
-            text_masked=masked,
-            text_norm=query,
-            intent=ranked[0][0],
-            confidence=ranked[0][1],
-        )
-    )
+    db.add(_student_message(dialog, masked, query, intent=ranked[0][0], confidence=ranked[0][1]))
     return _apply_decision(db, dialog, decision, started)
 
 
@@ -264,14 +302,98 @@ def _answer_in_category(db: Session, user: User, category: str) -> Reply:
     return _apply_decision(db, dialog, decision, started)
 
 
+def _close(db: Session, dialog: Dialog, reason: str) -> None:
+    dialog.ended_at = utcnow()
+    dialog.end_reason = reason
+    pending = select(Handoff).where(Handoff.dialog_id == dialog.id, Handoff.status == "pending")
+    for handoff in db.scalars(pending):
+        handoff.status = "cancelled"
+
+
+def _finish(db: Session, dialog: Dialog, reason: str) -> Reply:
+    _close(db, dialog, reason)
+    db.commit()
+    return Reply(END_PROMPT, "system", dialog.id, _resolved_buttons(dialog.id))
+
+
 def _end_dialog(db: Session, user: User) -> Reply:
     dialog = _active_dialog(db, user)
     if dialog is None:
         return Reply(NO_ACTIVE_DIALOG, "system")
-    dialog.ended_at = utcnow()
-    dialog.end_reason = "user"
+    return _finish(db, dialog, "user")
+
+
+def _save_feedback(db: Session, user: User, action: str) -> Reply:
+    kind, dialog_id, value = action.split(":")
+    dialog = db.get(Dialog, int(dialog_id))
+    if dialog is None or dialog.user_id != user.id or dialog.ended_at is None:
+        return Reply(NO_ACTIVE_DIALOG, "system")
+    if kind == "resolved":
+        if dialog.resolved is None:
+            dialog.resolved = value == "yes"
+            db.commit()
+        return Reply(RATE_PROMPT, "system", dialog.id, _rate_buttons(dialog.id))
+    if dialog.csat is None:
+        dialog.csat = int(value)
+        db.commit()
+    return Reply(THANKS, "system", dialog.id)
+
+
+def _queue_end_prompt(db: Session, dialog: Dialog) -> None:
+    buttons = [asdict(button) for button in _resolved_buttons(dialog.id)]
+    db.add(
+        Message(
+            dialog_id=dialog.id,
+            sender="bot",
+            text_masked=END_PROMPT,
+            response_type="system",
+            buttons_json=json.dumps(buttons, ensure_ascii=False),
+        )
+    )
+
+
+def answer_handoff(db: Session, handoff: Handoff, operator_id: int, text: str) -> None:
+    """Operator javobi navbatga qoʻyiladi; bot va veb-chat uni talabaga yetkazadi (FR-22)."""
+    dialog = db.get(Dialog, handoff.dialog_id)
+    handoff.status = "answered"
+    handoff.operator_id = operator_id
+    handoff.answered_at = utcnow()
+    db.add(
+        Message(
+            dialog_id=dialog.id,
+            sender="operator",
+            text_masked=mask_pii(text),
+            response_type="operator",
+            outbox_text=encrypt(text),
+        )
+    )
+    _close(db, dialog, "operator")
+    _queue_end_prompt(db, dialog)
     db.commit()
-    return Reply(ENDED, "system", dialog.id)
+
+
+def close_inactive_dialogs(db: Session, now: datetime | None = None) -> int:
+    """Faolsiz dialoglarni yopadi; operator javobini kutayotganlariga tegmaydi (FR-18)."""
+    cutoff = (now or utcnow()) - INACTIVITY_LIMIT
+    last = (
+        select(Message.dialog_id, func.max(Message.created_at).label("at"))
+        .group_by(Message.dialog_id)
+        .subquery()
+    )
+    stale = db.scalars(
+        select(Dialog)
+        .outerjoin(last, Dialog.id == last.c.dialog_id)
+        .where(
+            Dialog.ended_at.is_(None),
+            Dialog.handed_off.is_(False),
+            func.coalesce(last.c.at, Dialog.started_at) < cutoff,
+        )
+    ).all()
+    for dialog in stale:
+        _close(db, dialog, "timeout")
+        _queue_end_prompt(db, dialog)
+    db.commit()
+    return len(stale)
 
 
 def handle_message(
@@ -291,6 +413,8 @@ def handle_message(
         return _hand_off(db, _open_dialog(db, user, load_settings(db)), time.perf_counter())
     if action == "end":
         return _end_dialog(db, user)
+    if action is not None and action.startswith(("resolved:", "rate:")):
+        return _save_feedback(db, user, action)
     if action is not None:
         return _answer_in_category(db, user, action.removeprefix(CATEGORY_ACTION_PREFIX))
     return _answer_question(db, user, text)

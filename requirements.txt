@@ -1,5 +1,8 @@
+aiogram==3.31.0
 alembic==1.20.1
+cryptography==50.0.2
 fastapi==0.162.4
+httpx==0.28.1
 itsdangerous==2.2.0
 Jinja2==3.1.6
 joblib==1.6.0

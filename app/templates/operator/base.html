@@ -1,0 +1,10 @@
+{% extends "admin/base.html" %}
+{% block title %}TalabaBot operator{% endblock %}
+{% block nav %}
+<div class="d-flex align-items-center gap-3">
+  <a href="/operator">Navbat</a>
+  <form method="post" action="/admin/logout">
+    <button class="btn btn-sm btn-outline-secondary">Chiqish</button>
+  </form>
+</div>
+{% endblock %}

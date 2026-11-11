@@ -1,0 +1,22 @@
+{% extends "operator/base.html" %}
+{% block content %}
+{% if flash %}<div class="alert alert-info">{{ flash }}</div>{% endif %}
+<h1 class="h5 mb-3">Uzatilgan murojaatlar ({{ rows|length }})</h1>
+<div class="table-responsive bg-white border rounded">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Vaqt (UTC)</th><th>Toifa</th><th>Kanal</th><th></th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="text-nowrap">{{ row.handoff.created_at.strftime("%d.%m.%Y %H:%M") }}</td>
+        <td>{{ row.category or "—" }}</td>
+        <td>{{ row.channel }}</td>
+        <td class="text-end"><a class="btn btn-sm btn-primary" href="/operator/{{ row.handoff.id }}">Ochish</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="text-center text-secondary py-4">Navbat boʻsh.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

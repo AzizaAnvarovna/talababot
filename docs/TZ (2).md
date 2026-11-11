@@ -234,7 +234,7 @@ Quyidagi taʼriflar “Integral model” maqolasi bilan solishtirilishi kerak; f
 |----------------|-------------------------------------------------------------------------------------------------------------------------------------------|
 | users          | id, user_hash, channel, consent, delivery_ref (shifrlangan, faqat yetkazish uchun), created_at                                            |
 | dialogs        | id, user_id, channel, model_version, started_at, ended_at, end_reason, resolved (ha/yoʻq/null), csat (1–5/null), handed_off, is_test      |
-| messages       | id, dialog_id, sender (talaba/bot/operator), text_masked, text_norm, intent, confidence, response_type, latency_ms, sentiment, delivered_at, created_at |
+| messages       | id, dialog_id, sender (talaba/bot/operator), text_masked, text_norm, intent, confidence, response_type, latency_ms, sentiment, delivered_at, outbox_text (shifrlangan, yetkazilgach oʻchiriladi), buttons_json, created_at |
 | kb_items       | id, category, intent, questions, answer, source, department, verified                                                                     |
 | handoffs       | id, dialog_id, operator_id, status, created_at, answered_at                                                                               |
 | staff          | id, login, password_hash, role (operator/ekspert/admin)                                                                                   |
