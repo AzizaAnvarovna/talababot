@@ -2,7 +2,15 @@
 
 Talabalar murojaatlarini qayta ishlovchi chatbot. Talablar: `docs/TZ (2).md`.
 
-Hozirgi holat: 1-bosqich (skelet). NLP yadro va Telegram bot keyingi bosqichlarda qo'shiladi.
+Hozirgi holat: 2-bosqich (NLP yadro). Telegram bot keyingi bosqichda qo'shiladi.
+
+SVM modelini bilimlar bazasidagi savol namunalarida o'qitish:
+
+```powershell
+.\.venv\Scripts\python.exe -m app.nlp.train_svm
+```
+
+Keyin admin paneldagi "Sozlamalar" sahifasida modelni tanlang.
 
 ## Ishga tushirish (Windows)
 

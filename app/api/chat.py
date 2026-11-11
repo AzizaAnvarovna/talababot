@@ -7,23 +7,30 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db.session import get_db
-from app.dialog import handle_message
+from app.dialog import CATEGORY_ACTION_PREFIX, handle_message
+from app.kb_import import CATEGORIES
 from app.security import secrets_match
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
+
+_VALID_ACTIONS = {"start", "consent_yes", "consent_no", "operator", "end"} | {
+    f"{CATEGORY_ACTION_PREFIX}{category}" for category in CATEGORIES
+}
 
 
 class ChatRequest(BaseModel):
     channel: Literal["telegram", "web"]
     user_id: str = Field(min_length=1, max_length=128)
     text: str | None = Field(default=None, max_length=2000)
-    action: Literal["start", "consent_yes", "consent_no", "operator", "end"] | None = None
+    action: str | None = Field(default=None, max_length=128)
 
     @model_validator(mode="after")
     def require_text_or_action(self) -> "ChatRequest":
         has_text = bool(self.text and self.text.strip())
         if has_text == (self.action is not None):
             raise ValueError("text yoki action dan aynan bittasi berilishi kerak")
+        if self.action is not None and self.action not in _VALID_ACTIONS:
+            raise ValueError("Notoʻgʻri action")
         return self
 
 

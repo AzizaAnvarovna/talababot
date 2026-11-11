@@ -65,7 +65,7 @@ def test_unverified_answer_is_never_shown(client, db_session):
     add_kb(db_session, verified=False)
     consent(client)
     data = post(client, text=QUESTION).json()
-    assert data["response_type"] == "fallback"
+    assert data["response_type"] == "clarify"
     assert "25-sanasida" not in data["text"]
 
 

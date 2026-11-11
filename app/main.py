@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api import admin, chat
+from app.api import admin, admin_config, chat
 from app.config import get_settings
 
 settings = get_settings()
@@ -17,6 +17,7 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(admin.public)
 app.include_router(admin.router)
+app.include_router(admin_config.router)
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)

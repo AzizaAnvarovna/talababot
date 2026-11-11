@@ -1,27 +1,31 @@
-"""1-bosqich uchun vaqtinchalik qidiruv; 2-bosqichda TF-IDF bilan almashtiriladi (FR-10)."""
+"""Toifa ichidan eng oʻxshash yozuvni tanlash (FR-10, FR-17)."""
 
-import re
+from collections.abc import Mapping
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import KbItem
-
-_MIN_SIMILARITY = 0.5
-
-
-def _tokens(text: str) -> set[str]:
-    return set(re.findall(r"\w+", text.lower()))
+from app.nlp.normalizer import normalize
 
 
-def find_verified_answer(db: Session, question: str) -> KbItem | None:
-    query_tokens = _tokens(question)
-    best, best_score = None, 0.0
-    for item in db.scalars(select(KbItem).where(KbItem.verified.is_(True))):
-        for sample in item.questions.splitlines():
-            sample_tokens = _tokens(sample)
-            union = query_tokens | sample_tokens
-            score = len(query_tokens & sample_tokens) / len(union) if union else 0.0
-            if score > best_score:
-                best, best_score = item, score
-    return best if best_score >= _MIN_SIMILARITY else None
+def best_match(
+    db: Session, query: str, category: str, slang: Mapping[str, str] | None = None
+) -> tuple[KbItem | None, float]:
+    items = db.scalars(select(KbItem).where(KbItem.category == category, KbItem.verified.is_(True)))
+    pairs = [
+        (item, normalize(sample, slang))
+        for item in items
+        for sample in item.questions.splitlines()
+        if sample.strip()
+    ]
+    if not pairs:
+        return None, 0.0
+    # Harf n-gramlari oʻzbekcha qoʻshimchalarga chidamli: "stipendiyam" ~ "stipendiya".
+    vectorizer = TfidfVectorizer(analyzer="char_wb", ngram_range=(3, 5), sublinear_tf=True)
+    matrix = vectorizer.fit_transform(sample for _, sample in pairs)
+    similarities = cosine_similarity(vectorizer.transform([query]), matrix)[0]
+    best = int(similarities.argmax())
+    return pairs[best][0], float(similarities[best])

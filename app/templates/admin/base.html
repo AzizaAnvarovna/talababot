@@ -11,9 +11,14 @@
     <div class="container">
       <a class="navbar-brand" href="/admin/kb">TalabaBot admin</a>
       {% block nav %}
-      <form method="post" action="/admin/logout">
-        <button class="btn btn-sm btn-outline-secondary">Chiqish</button>
-      </form>
+      <div class="d-flex flex-wrap align-items-center gap-3">
+        <a href="/admin/kb">Bilimlar bazasi</a>
+        <a href="/admin/slang">Lugʻat</a>
+        <a href="/admin/settings">Sozlamalar</a>
+        <form method="post" action="/admin/logout">
+          <button class="btn btn-sm btn-outline-secondary">Chiqish</button>
+        </form>
+      </div>
       {% endblock %}
     </div>
   </nav>
