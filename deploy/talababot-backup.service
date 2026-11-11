@@ -1,0 +1,14 @@
+[Unit]
+Description=TalabaBot bazasining zaxira nusxasi
+
+[Service]
+Type=oneshot
+User=talababot
+Group=talababot
+WorkingDirectory=/opt/talababot
+ExecStart=/opt/talababot/.venv/bin/python -m app.backup
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/talababot/var

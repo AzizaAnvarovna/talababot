@@ -41,7 +41,14 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         await task
 
 
-app = FastAPI(title="TalabaBot", lifespan=lifespan)
+# HTTPS dagi ishchi serverda API hujjati ochiq turmaydi.
+app = FastAPI(
+    title="TalabaBot",
+    lifespan=lifespan,
+    docs_url=None if settings.cookie_secure else "/docs",
+    redoc_url=None if settings.cookie_secure else "/redoc",
+    openapi_url=None if settings.cookie_secure else "/openapi.json",
+)
 app.add_middleware(
     SessionMiddleware,
     secret_key=settings.secret_key,

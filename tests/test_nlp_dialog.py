@@ -209,3 +209,26 @@ def test_ab_assigns_both_models_and_keeps_them(client, db_session, monkeypatch, 
         assert first["dialog_id"] == second["dialog_id"]
         versions.add(db_session.get(Dialog, first["dialog_id"]).model_version)
     assert versions == {"rule-based", "svm"}
+
+
+def test_knowledge_base_edits_take_effect_immediately(client, db_session):
+    start(client, db_session)
+    assert "Bankka" not in post(client, text="Stipendiya kartasi yopildi").json()["text"]
+    db_session.add(
+        KbItem(
+            category="Stipendiya",
+            intent="karta",
+            questions="Stipendiya kartasi yopildi",
+            answer="Bankka boring.",
+            verified=True,
+        )
+    )
+    db_session.commit()
+    post(client, action="end")
+    assert "Bankka" in post(client, text="Stipendiya kartasi yopildi").json()["text"]
+
+    item = db_session.scalars(select(KbItem).where(KbItem.intent == "karta")).one()
+    item.verified = False
+    db_session.commit()
+    post(client, action="end")
+    assert "Bankka" not in post(client, text="Stipendiya kartasi yopildi").json()["text"]

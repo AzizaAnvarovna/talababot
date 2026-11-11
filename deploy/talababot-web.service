@@ -1,0 +1,22 @@
+[Unit]
+Description=TalabaBot veb-ilova va Dialog API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=talababot
+Group=talababot
+WorkingDirectory=/opt/talababot
+ExecStartPre=/opt/talababot/.venv/bin/alembic upgrade head
+# Faqat bitta worker: faolsizlik tekshiruvi va SQLite shuni talab qiladi.
+ExecStart=/opt/talababot/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/talababot/var
+
+[Install]
+WantedBy=multi-user.target

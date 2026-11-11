@@ -11,4 +11,5 @@ htmlcov/
 *.db-wal
 *.db-shm
 data/
+backups/
 models/*.joblib

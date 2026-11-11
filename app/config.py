@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     api_base_url: str = "http://127.0.0.1:8000"
     database_url: str = "sqlite:///./talababot.db"
+    backup_dir: str = "backups"
     cookie_secure: bool = False
     test_mode: bool = True
 

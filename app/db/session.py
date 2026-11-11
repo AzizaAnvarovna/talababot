@@ -12,8 +12,11 @@ def build_engine(url: str) -> Engine:
     if is_sqlite:
 
         @event.listens_for(engine, "connect")
-        def enable_foreign_keys(connection, _record):
+        def configure_sqlite(connection, _record):
             connection.execute("PRAGMA foreign_keys=ON")
+            # WAL oʻquvchilarni yozuvchi kutishidan ozod qiladi (NFR-2).
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA busy_timeout=5000")
 
     return engine
 
