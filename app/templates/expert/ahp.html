@@ -1,0 +1,32 @@
+{% extends "expert/base.html" %}
+{% block content %}
+<div style="max-width: 720px">
+  <h1 class="h5">AHP soʻrovnomasi</h1>
+  <p class="text-secondary">Har bir juftlikda qaysi koʻrsatkich muhimroq ekanini tanlang (1 — teng, 9 — mutlaqo muhimroq).</p>
+  {% if flash %}<div class="alert alert-info">{{ flash }}</div>{% endif %}
+  {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+  <form method="post" action="/expert/ahp">
+    {% for level in levels %}
+    <section class="bg-white border rounded p-3 mb-3">
+      <h2 class="h6">{{ level.title }}</h2>
+      {% for pair in level.pairs %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ pair.field }}"><strong>{{ pair.a }}</strong> va <strong>{{ pair.b }}</strong></label>
+        <select class="form-select" id="{{ pair.field }}" name="{{ pair.field }}">
+          {% for option in scale %}
+          <option value="{{ option }}" {% if option == pair.value %}selected{% endif %}>
+            {%- if option == "1" -%}Teng ahamiyatli
+            {%- elif option.startswith("1/") -%}Ikkinchisi {{ option[2:] }} marta muhimroq
+            {%- else -%}Birinchisi {{ option }} marta muhimroq
+            {%- endif -%}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+    </section>
+    {% endfor %}
+    <button class="btn btn-primary">Saqlash</button>
+  </form>
+</div>
+{% endblock %}

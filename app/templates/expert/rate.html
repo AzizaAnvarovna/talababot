@@ -1,0 +1,35 @@
+{% extends "expert/base.html" %}
+{% block content %}
+{% if flash %}<div class="alert alert-info">{{ flash }}</div>{% endif %}
+<div style="max-width: 720px">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="h5 m-0">Dialogni baholash</h1>
+    <span class="text-secondary">{{ rated }} / {{ target }}</span>
+  </div>
+  <div class="progress mb-3" role="progressbar" aria-label="Baholash jarayoni" aria-valuenow="{{ rated }}" aria-valuemin="0" aria-valuemax="{{ target }}" style="height: 6px">
+    <div class="progress-bar" style="width: {{ (rated / target * 100)|round }}%"></div>
+  </div>
+  {% if dialog_id %}
+  <div class="bg-white border rounded p-3 mb-3">
+    {% for message in messages %}
+    <div class="mb-2">
+      <div class="small text-secondary">{{ message.sender }}</div>
+      <div style="white-space: pre-line; overflow-wrap: anywhere">{{ message.text_masked }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <form method="post" action="/expert/rate/{{ dialog_id }}">
+    <p class="mb-2">Javoblar savolga qanchalik mos? (1 — umuman mos emas, 5 — toʻliq mos)</p>
+    <div class="d-flex flex-wrap gap-2">
+      {% for score in range(1, 6) %}
+      <button class="btn btn-outline-primary" name="score" value="{{ score }}">{{ score }}</button>
+      {% endfor %}
+    </div>
+  </form>
+  {% elif rated >= target %}
+  <div class="alert alert-success">Rahmat! Barcha {{ target }} ta dialog baholandi.</div>
+  {% else %}
+  <div class="alert alert-secondary">Hozircha baholanadigan dialog qolmadi.</div>
+  {% endif %}
+</div>
+{% endblock %}

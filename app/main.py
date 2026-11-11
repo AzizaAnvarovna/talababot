@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api import admin, admin_config, chat, internal, operator
+from app.api import admin, admin_config, analytics, chat, expert, internal, operator
 from app.config import get_settings
 from app.db.session import SessionLocal
 from app.dialog import close_inactive_dialogs
@@ -54,6 +54,8 @@ app.include_router(admin.public)
 app.include_router(admin.router)
 app.include_router(admin_config.router)
 app.include_router(operator.router)
+app.include_router(analytics.router)
+app.include_router(expert.router)
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)

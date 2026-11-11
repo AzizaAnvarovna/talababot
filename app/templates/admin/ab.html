@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+{% macro num(value) %}{{ "%.3f"|format(value) if value is not none else "—" }}{% endmacro %}
+{% macro verdict(p, alpha) %}
+{%- if p is none -%}Maʼlumot yetarli emas
+{%- elif p < alpha -%}p = {{ "%.4f"|format(p) }}, farq ahamiyatli
+{%- else -%}p = {{ "%.4f"|format(p) }}, farq ahamiyatli emas
+{%- endif -%}
+{% endmacro %}
+{% block content %}
+<h1 class="h5 mb-3">A/B taqqoslash</h1>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-6 col-md-auto">
+    <label class="form-label small mb-1" for="model_a">A model</label>
+    <select class="form-select form-select-sm" id="model_a" name="model_a">
+      {% for model in models %}<option {% if report.model_a == model %}selected{% endif %}>{{ model }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-auto">
+    <label class="form-label small mb-1" for="model_b">B model</label>
+    <select class="form-select form-select-sm" id="model_b" name="model_b">
+      {% for model in models %}<option {% if report.model_b == model %}selected{% endif %}>{{ model }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-6 col-md-auto">
+    <label class="form-label small mb-1" for="date_from">Boshlanish</label>
+    <input class="form-control form-control-sm" type="date" id="date_from" name="date_from" value="{{ filters.date_from or '' }}">
+  </div>
+  <div class="col-6 col-md-auto">
+    <label class="form-label small mb-1" for="date_to">Tugash</label>
+    <input class="form-control form-control-sm" type="date" id="date_to" name="date_to" value="{{ filters.date_to or '' }}">
+  </div>
+  <div class="col-12 col-md-auto">
+    <label class="form-label small mb-1" for="channel">Kanal</label>
+    <select class="form-select form-select-sm" id="channel" name="channel">
+      <option value="">Barchasi</option>
+      <option value="telegram" {% if filters.channel == "telegram" %}selected{% endif %}>Telegram</option>
+      <option value="web" {% if filters.channel == "web" %}selected{% endif %}>Veb</option>
+    </select>
+  </div>
+  <div class="col-12 col-md-auto form-check ms-md-2 mb-1">
+    <input class="form-check-input" type="checkbox" id="include_test" name="include_test" value="1" {% if filters.include_test %}checked{% endif %}>
+    <label class="form-check-label small" for="include_test">Test dialoglarini qoʻshish</label>
+  </div>
+  <div class="col-12 col-md-auto d-flex flex-wrap gap-2">
+    <button class="btn btn-sm btn-primary">Koʻrsatish</button>
+    <a class="btn btn-sm btn-outline-secondary" href="/admin/analytics/ab/export.csv?{{ query }}">CSV</a>
+    <a class="btn btn-sm btn-outline-secondary" href="/admin/analytics/ab/export.xlsx?{{ query }}">Excel</a>
+  </div>
+</form>
+
+{% if filters.include_test %}
+<div class="alert alert-warning">Diqqat: natijalarga test dialoglari kiritilgan. Bu raqamlarni dissertatsiyada ishlatmang.</div>
+{% endif %}
+
+<div class="table-responsive bg-white border rounded mb-3" style="max-width: 720px">
+  <table class="table table-sm align-middle mb-0">
+    <thead><tr><th>Koʻrsatkich</th><th class="text-end">{{ report.model_a }}</th><th class="text-end">{{ report.model_b }}</th></tr></thead>
+    <tbody>
+      {% for row in report.rows %}
+      <tr><td>{{ row.label }}</td><td class="text-end">{{ num(row.a) }}</td><td class="text-end">{{ num(row.b) }}</td></tr>
+      {% endfor %}
+      <tr class="text-secondary"><td>Dialoglar soni (N)</td><td class="text-end">{{ report.n_a }}</td><td class="text-end">{{ report.n_b }}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="bg-white border rounded p-3" style="max-width: 720px">
+  <h2 class="h6">Statistik ahamiyat (α = {{ report.alpha }})</h2>
+  <p class="mb-1">k4, χ² mezoni: {{ verdict(report.k4_p, report.alpha) }}</p>
+  <p class="mb-0">CSAT, Mann–Whitney mezoni: {{ verdict(report.csat_p, report.alpha) }}</p>
+</div>
+{% endblock %}

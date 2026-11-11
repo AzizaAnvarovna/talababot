@@ -2,7 +2,7 @@
 
 Talabalar murojaatlarini qayta ishlovchi chatbot. Talablar: `docs/TZ (2).md`.
 
-Hozirgi holat: 3-bosqich (Telegram bot va operator paneli). Tahlil paneli keyingi bosqichda qo'shiladi.
+Hozirgi holat: 4-bosqich (tahlil paneli, AHP, ekspert sahifalari). Modellarni taqqoslash eksperimenti keyingi bosqichda qo'shiladi.
 
 Xodim yaratish (parol so'raladi, rollar: `admin`, `operator`, `ekspert`):
 

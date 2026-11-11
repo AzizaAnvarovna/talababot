@@ -1,0 +1,189 @@
+{% extends "admin/base.html" %}
+{% macro num(value) %}{{ "%.3f"|format(value) if value is not none else "—" }}{% endmacro %}
+{% block content %}
+<style>
+  .viz { --series: #2a78d6; --grid: #e7e6e1; --ink: #52514e; }
+  .chart-box { position: relative; height: 260px; }
+</style>
+<h1 class="h5 mb-3">Tahlil paneli</h1>
+
+<form method="get" class="row g-2 align-items-end mb-3">
+  <div class="col-6 col-md-auto">
+    <label class="form-label small mb-1" for="date_from">Boshlanish</label>
+    <input class="form-control form-control-sm" type="date" id="date_from" name="date_from" value="{{ filters.date_from or '' }}">
+  </div>
+  <div class="col-6 col-md-auto">
+    <label class="form-label small mb-1" for="date_to">Tugash</label>
+    <input class="form-control form-control-sm" type="date" id="date_to" name="date_to" value="{{ filters.date_to or '' }}">
+  </div>
+  <div class="col-12 col-md-auto">
+    <label class="form-label small mb-1" for="model">Model</label>
+    <select class="form-select form-select-sm" id="model" name="model">
+      <option value="">Barchasi</option>
+      {% for model in models %}<option {% if filters.model == model %}selected{% endif %}>{{ model }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-md-auto form-check ms-md-2 mb-1">
+    <input class="form-check-input" type="checkbox" id="include_test" name="include_test" value="1" {% if filters.include_test %}checked{% endif %}>
+    <label class="form-check-label small" for="include_test">Test dialoglarini qoʻshish</label>
+  </div>
+  <div class="col-12 col-md-auto d-flex flex-wrap gap-2">
+    <button class="btn btn-sm btn-primary">Koʻrsatish</button>
+    <a class="btn btn-sm btn-outline-secondary" href="/admin/analytics/export.csv?{{ query }}">CSV</a>
+    <a class="btn btn-sm btn-outline-secondary" href="/admin/analytics/export.xlsx?{{ query }}">Excel</a>
+  </div>
+</form>
+
+{% if filters.include_test %}
+<div class="alert alert-warning">Diqqat: natijalarga test dialoglari kiritilgan. Bu raqamlarni dissertatsiyada ishlatmang.</div>
+{% endif %}
+{% if report.missing %}
+<div class="alert alert-secondary">Q hisoblanishi uchun yetishmaydi: {{ report.missing|join(", ") }}.</div>
+{% endif %}
+
+<div class="table-responsive bg-white border rounded mb-3">
+  <table class="table table-sm align-middle mb-0">
+    <thead>
+      <tr><th>Koʻrsatkich</th>{% for column in report.columns %}<th class="text-end">{{ column }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for row in report.rows %}
+      <tr {% if row.code == "Q" %}class="fw-semibold"{% endif %}>
+        <td>{{ row.label }}</td>
+        {% for value in row["values"] %}
+        <td class="text-end text-nowrap">{{ num(value) }}{% if row.interpretations[loop.index0] %} <span class="small text-secondary">({{ row.interpretations[loop.index0] }})</span>{% endif %}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      {% for row in report.counts %}
+      <tr class="text-secondary">
+        <td>{{ row.label }}</td>
+        {% for value in row["values"] %}<td class="text-end">{{ value }}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="viz row g-3 mb-3">
+  <section class="col-12 col-lg-6">
+    <div class="bg-white border rounded p-3 h-100">
+      <h2 class="h6">Kunlik dialoglar soni</h2>
+      <div class="chart-box"><canvas id="daily" role="img" aria-label="Kunlik dialoglar soni grafigi"></canvas></div>
+    </div>
+  </section>
+  <section class="col-12 col-lg-6">
+    <div class="bg-white border rounded p-3 h-100">
+      <h2 class="h6">Toifalar taqsimoti</h2>
+      <div class="chart-box"><canvas id="categories" role="img" aria-label="Toifalar taqsimoti grafigi"></canvas></div>
+    </div>
+  </section>
+  <section class="col-12">
+    <div class="bg-white border rounded p-3">
+      <h2 class="h6">Q dinamikasi</h2>
+      {% if report.weights and report.daily|selectattr("q")|list %}
+      <div class="chart-box"><canvas id="quality" role="img" aria-label="Q indeksining kunlik dinamikasi grafigi"></canvas></div>
+      {% else %}
+      <p class="text-secondary mb-0">Q hisoblanmaguncha grafik chiqmaydi.</p>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<details class="bg-white border rounded p-3 mb-3">
+  <summary>Grafik maʼlumotlari jadval koʻrinishida</summary>
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-md-6">
+      <table class="table table-sm">
+        <thead><tr><th>Sana</th><th class="text-end">Dialoglar</th><th class="text-end">Q</th></tr></thead>
+        <tbody>{% for row in report.daily %}<tr><td>{{ row.date }}</td><td class="text-end">{{ row.dialogs }}</td><td class="text-end">{{ num(row.q) }}</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+    <div class="col-12 col-md-6">
+      <table class="table table-sm">
+        <thead><tr><th>Toifa</th><th class="text-end">Dialoglar</th></tr></thead>
+        <tbody>{% for row in report.categories %}<tr><td>{{ row.category }}</td><td class="text-end">{{ row.dialogs }}</td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+</details>
+
+<section class="bg-white border rounded p-3">
+  <h2 class="h6">AHP vaznlari</h2>
+  {% if report.weights %}
+  <p class="text-secondary small">Ekspertlar soni: {{ report.weights.experts }}</p>
+  <div class="table-responsive">
+    <table class="table table-sm" style="max-width: 560px">
+      <thead><tr><th>Koʻrsatkich</th><th class="text-end">Umumiy vazn</th></tr></thead>
+      <tbody>
+        {% for code in report.weights.local %}
+        <tr><td>{{ labels[code] }}</td><td class="text-end">{{ num(report.weights.overall(code)) }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% for level, ratio in report.weights.consistency.items() %}
+  {% if ratio >= 0.1 %}<div class="alert alert-warning py-2">Daraja {{ level }}: CR = {{ num(ratio) }} — izchillik yetarli emas (CR ≥ 0,10).</div>{% endif %}
+  {% endfor %}
+  {% else %}
+  <p class="text-secondary mb-0">Ekspertlar barcha AHP matritsalarini toʻldirmagan.</p>
+  {% endif %}
+</section>
+
+<script id="chart-data" type="application/json">{{ chart|tojson }}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<script>
+  const data = JSON.parse(document.getElementById("chart-data").textContent);
+  const style = getComputedStyle(document.querySelector(".viz"));
+  const series = style.getPropertyValue("--series").trim();
+  const grid = style.getPropertyValue("--grid").trim();
+  Chart.defaults.color = style.getPropertyValue("--ink").trim();
+  Chart.defaults.plugins.legend.display = false;
+  Chart.defaults.maintainAspectRatio = false;
+  const hover = { mode: "index", intersect: false };
+  const roundedEnd = { topLeft: 4, topRight: 4, bottomLeft: 0, bottomRight: 0 };
+  const roundedRight = { topLeft: 0, topRight: 4, bottomLeft: 0, bottomRight: 4 };
+
+  new Chart(document.getElementById("daily"), {
+    type: "bar",
+    data: {
+      labels: data.daily.map(row => row.date),
+      datasets: [{ label: "Dialoglar", data: data.daily.map(row => row.dialogs),
+                   backgroundColor: series, maxBarThickness: 24, borderRadius: roundedEnd, borderSkipped: false }],
+    },
+    options: { interaction: hover, scales: {
+      x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+      y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: grid }, border: { display: false } },
+    } },
+  });
+
+  new Chart(document.getElementById("categories"), {
+    type: "bar",
+    data: {
+      labels: data.categories.map(row => row.category),
+      datasets: [{ label: "Dialoglar", data: data.categories.map(row => row.dialogs),
+                   backgroundColor: series, maxBarThickness: 24, borderRadius: roundedRight, borderSkipped: false }],
+    },
+    options: { indexAxis: "y", interaction: { mode: "index", axis: "y", intersect: false }, scales: {
+      x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: grid }, border: { display: false } },
+      y: { grid: { display: false } },
+    } },
+  });
+
+  const quality = document.getElementById("quality");
+  if (quality) {
+    new Chart(quality, {
+      type: "line",
+      data: {
+        labels: data.daily.map(row => row.date),
+        datasets: [{ label: "Q", data: data.daily.map(row => row.q), borderColor: series, backgroundColor: series,
+                     borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, spanGaps: false }],
+      },
+      options: { interaction: hover, scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+        y: { min: 0, max: 1, grid: { color: grid }, border: { display: false } },
+      } },
+    });
+  }
+</script>
+{% endblock %}

@@ -1,6 +1,16 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, MetaData, String, Text
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -102,6 +112,7 @@ class Handoff(Base):
 
 class ExpertRating(Base):
     __tablename__ = "expert_ratings"
+    __table_args__ = (UniqueConstraint("dialog_id", "expert_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     dialog_id: Mapped[int] = mapped_column(ForeignKey("dialogs.id"), index=True)
