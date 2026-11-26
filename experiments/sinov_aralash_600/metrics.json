@@ -36,13 +36,13 @@
   "models": {
     "naive-bayes": {
       "cv": {
-        "accuracy_mean": 0.896667,
+        "accuracy_mean": 0.9,
         "folds": 5,
-        "macro_f1_mean": 0.897266,
-        "macro_f1_std": 0.022888
+        "macro_f1_mean": 0.900648,
+        "macro_f1_std": 0.02432
       },
       "holdout": {
-        "accuracy": 0.875,
+        "accuracy": 0.883333,
         "confusion_matrix": [
           [
             19,
@@ -87,15 +87,15 @@
           [
             0,
             0,
-            2,
+            1,
             0,
             0,
-            17
+            18
           ]
         ],
-        "macro_f1": 0.876533,
-        "macro_precision": 0.887086,
-        "macro_recall": 0.879161,
+        "macro_f1": 0.884635,
+        "macro_precision": 0.893344,
+        "macro_recall": 0.887933,
         "per_category": {
           "Akademik taʼtil va koʻchirish": {
             "f1-score": 0.883721,
@@ -110,8 +110,8 @@
             "support": 21.0
           },
           "Hujjatlar va arizalar": {
-            "f1-score": 0.863636,
-            "precision": 0.826087,
+            "f1-score": 0.883721,
+            "precision": 0.863636,
             "recall": 0.904762,
             "support": 21.0
           },
@@ -128,9 +128,9 @@
             "support": 18.0
           },
           "Yotoqxona": {
-            "f1-score": 0.944444,
+            "f1-score": 0.972973,
             "precision": 1.0,
-            "recall": 0.894737,
+            "recall": 0.947368,
             "support": 19.0
           }
         }
@@ -304,13 +304,13 @@
     },
     "svm": {
       "cv": {
-        "accuracy_mean": 0.925,
+        "accuracy_mean": 0.928333,
         "folds": 5,
-        "macro_f1_mean": 0.926323,
-        "macro_f1_std": 0.014811
+        "macro_f1_mean": 0.929593,
+        "macro_f1_std": 0.01646
       },
       "holdout": {
-        "accuracy": 0.908333,
+        "accuracy": 0.916667,
         "confusion_matrix": [
           [
             18,
@@ -354,16 +354,16 @@
           ],
           [
             0,
-            1,
+            0,
             1,
             0,
             0,
-            17
+            18
           ]
         ],
-        "macro_f1": 0.911539,
-        "macro_precision": 0.918592,
-        "macro_recall": 0.908629,
+        "macro_f1": 0.919661,
+        "macro_precision": 0.92463,
+        "macro_recall": 0.917401,
         "per_category": {
           "Akademik taʼtil va koʻchirish": {
             "f1-score": 0.947368,
@@ -372,8 +372,8 @@
             "support": 19.0
           },
           "Boshqa": {
-            "f1-score": 0.888889,
-            "precision": 0.833333,
+            "f1-score": 0.909091,
+            "precision": 0.869565,
             "recall": 0.952381,
             "support": 21.0
           },
@@ -396,9 +396,9 @@
             "support": 18.0
           },
           "Yotoqxona": {
-            "f1-score": 0.944444,
+            "f1-score": 0.972973,
             "precision": 1.0,
-            "recall": 0.894737,
+            "recall": 0.947368,
             "support": 19.0
           }
         }
