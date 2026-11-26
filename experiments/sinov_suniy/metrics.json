@@ -1,0 +1,441 @@
+{
+  "dataset": {
+    "below_target_150": [
+      "Akademik taʼtil va koʻchirish",
+      "Boshqa",
+      "Hujjatlar va arizalar",
+      "Oʻquv jarayoni",
+      "Stipendiya",
+      "Yotoqxona"
+    ],
+    "conflicting_labels_removed": 0,
+    "duplicates_removed": 0,
+    "per_category": {
+      "Akademik taʼtil va koʻchirish": 83,
+      "Boshqa": 83,
+      "Hujjatlar va arizalar": 83,
+      "Oʻquv jarayoni": 84,
+      "Stipendiya": 84,
+      "Yotoqxona": 83
+    },
+    "rows": 500,
+    "samples": 500,
+    "sha256": "60658a8dac8e8287853df2383529b7d7e820a495e981cc97577393c8e029f288",
+    "skipped_rows": [],
+    "test": 100,
+    "train": 400
+  },
+  "labels": [
+    "Akademik taʼtil va koʻchirish",
+    "Boshqa",
+    "Hujjatlar va arizalar",
+    "Oʻquv jarayoni",
+    "Stipendiya",
+    "Yotoqxona"
+  ],
+  "models": {
+    "naive-bayes": {
+      "cv": {
+        "accuracy_mean": 0.91,
+        "folds": 5,
+        "macro_f1_mean": 0.907798,
+        "macro_f1_std": 0.023161
+      },
+      "holdout": {
+        "accuracy": 0.91,
+        "confusion_matrix": [
+          [
+            16,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            12,
+            1,
+            2,
+            0,
+            1
+          ],
+          [
+            0,
+            1,
+            16,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            16,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            16
+          ]
+        ],
+        "macro_f1": 0.908115,
+        "macro_precision": 0.909742,
+        "macro_recall": 0.909314,
+        "per_category": {
+          "Akademik taʼtil va koʻchirish": {
+            "f1-score": 0.941176,
+            "precision": 0.941176,
+            "recall": 0.941176,
+            "support": 17.0
+          },
+          "Boshqa": {
+            "f1-score": 0.8,
+            "precision": 0.857143,
+            "recall": 0.75,
+            "support": 16.0
+          },
+          "Hujjatlar va arizalar": {
+            "f1-score": 0.914286,
+            "precision": 0.888889,
+            "recall": 0.941176,
+            "support": 17.0
+          },
+          "Oʻquv jarayoni": {
+            "f1-score": 0.882353,
+            "precision": 0.882353,
+            "recall": 0.882353,
+            "support": 17.0
+          },
+          "Stipendiya": {
+            "f1-score": 0.969697,
+            "precision": 1.0,
+            "recall": 0.941176,
+            "support": 17.0
+          },
+          "Yotoqxona": {
+            "f1-score": 0.941176,
+            "precision": 0.888889,
+            "recall": 1.0,
+            "support": 16.0
+          }
+        }
+      },
+      "robustness": {
+        "cyrillic": {
+          "n": 12,
+          "normalized": {
+            "accuracy": 0.833333,
+            "macro_f1": 0.818452,
+            "macro_precision": 0.8125,
+            "macro_recall": 0.9
+          },
+          "raw": {
+            "accuracy": 0.416667,
+            "macro_f1": 0.380952,
+            "macro_precision": 0.64,
+            "macro_recall": 0.413333
+          }
+        },
+        "typo": {
+          "n": 26,
+          "normalized": {
+            "accuracy": 0.923077,
+            "macro_f1": 0.869048,
+            "macro_precision": 0.888889,
+            "macro_recall": 0.916667
+          },
+          "raw": {
+            "accuracy": 0.884615,
+            "macro_f1": 0.820635,
+            "macro_precision": 0.875,
+            "macro_recall": 0.875
+          }
+        }
+      }
+    },
+    "rule-based": {
+      "cv": {
+        "accuracy_mean": 0.704,
+        "folds": 5,
+        "macro_f1_mean": 0.684833,
+        "macro_f1_std": 0.044576
+      },
+      "holdout": {
+        "accuracy": 0.69,
+        "confusion_matrix": [
+          [
+            6,
+            0,
+            1,
+            6,
+            1,
+            3
+          ],
+          [
+            0,
+            2,
+            2,
+            12,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            14,
+            3,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            17,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            3,
+            14,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            16
+          ]
+        ],
+        "macro_f1": 0.657164,
+        "macro_precision": 0.8356,
+        "macro_recall": 0.6875,
+        "per_category": {
+          "Akademik taʼtil va koʻchirish": {
+            "f1-score": 0.521739,
+            "precision": 1.0,
+            "recall": 0.352941,
+            "support": 17.0
+          },
+          "Boshqa": {
+            "f1-score": 0.222222,
+            "precision": 1.0,
+            "recall": 0.125,
+            "support": 16.0
+          },
+          "Hujjatlar va arizalar": {
+            "f1-score": 0.823529,
+            "precision": 0.823529,
+            "recall": 0.823529,
+            "support": 17.0
+          },
+          "Oʻquv jarayoni": {
+            "f1-score": 0.586207,
+            "precision": 0.414634,
+            "recall": 1.0,
+            "support": 17.0
+          },
+          "Stipendiya": {
+            "f1-score": 0.875,
+            "precision": 0.933333,
+            "recall": 0.823529,
+            "support": 17.0
+          },
+          "Yotoqxona": {
+            "f1-score": 0.914286,
+            "precision": 0.842105,
+            "recall": 1.0,
+            "support": 16.0
+          }
+        }
+      },
+      "robustness": {
+        "cyrillic": {
+          "n": 12,
+          "normalized": {
+            "accuracy": 0.75,
+            "macro_f1": 0.732143,
+            "macro_precision": 0.770833,
+            "macro_recall": 0.85
+          },
+          "raw": {
+            "accuracy": 0.083333,
+            "macro_f1": 0.038462,
+            "macro_precision": 0.020833,
+            "macro_recall": 0.25
+          }
+        },
+        "typo": {
+          "n": 26,
+          "normalized": {
+            "accuracy": 0.730769,
+            "macro_f1": 0.601362,
+            "macro_precision": 0.67963,
+            "macro_recall": 0.666667
+          },
+          "raw": {
+            "accuracy": 0.692308,
+            "macro_f1": 0.575854,
+            "macro_precision": 0.672222,
+            "macro_recall": 0.638889
+          }
+        }
+      }
+    },
+    "svm": {
+      "cv": {
+        "accuracy_mean": 0.956,
+        "folds": 5,
+        "macro_f1_mean": 0.955913,
+        "macro_f1_std": 0.013694
+      },
+      "holdout": {
+        "accuracy": 0.96,
+        "confusion_matrix": [
+          [
+            16,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            14,
+            0,
+            2,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            17,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            17,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0,
+            0,
+            16,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            16
+          ]
+        ],
+        "macro_f1": 0.959806,
+        "macro_precision": 0.961623,
+        "macro_recall": 0.959559,
+        "per_category": {
+          "Akademik taʼtil va koʻchirish": {
+            "f1-score": 0.969697,
+            "precision": 1.0,
+            "recall": 0.941176,
+            "support": 17.0
+          },
+          "Boshqa": {
+            "f1-score": 0.875,
+            "precision": 0.875,
+            "recall": 0.875,
+            "support": 16.0
+          },
+          "Hujjatlar va arizalar": {
+            "f1-score": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "support": 17.0
+          },
+          "Oʻquv jarayoni": {
+            "f1-score": 0.944444,
+            "precision": 0.894737,
+            "recall": 1.0,
+            "support": 17.0
+          },
+          "Stipendiya": {
+            "f1-score": 0.969697,
+            "precision": 1.0,
+            "recall": 0.941176,
+            "support": 17.0
+          },
+          "Yotoqxona": {
+            "f1-score": 1.0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "support": 16.0
+          }
+        }
+      },
+      "robustness": {
+        "cyrillic": {
+          "n": 12,
+          "normalized": {
+            "accuracy": 0.916667,
+            "macro_f1": 0.888889,
+            "macro_precision": 0.875,
+            "macro_recall": 0.95
+          },
+          "raw": {
+            "accuracy": 0.5,
+            "macro_f1": 0.46,
+            "macro_precision": 0.6,
+            "macro_recall": 0.48
+          }
+        },
+        "typo": {
+          "n": 26,
+          "normalized": {
+            "accuracy": 1.0,
+            "macro_f1": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0
+          },
+          "raw": {
+            "accuracy": 1.0,
+            "macro_f1": 1.0,
+            "macro_precision": 1.0,
+            "macro_recall": 1.0
+          }
+        }
+      }
+    }
+  },
+  "seed": 42
+}
