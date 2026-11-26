@@ -165,3 +165,23 @@ def test_static_files_are_served(client):
     response = client.get("/static/README.txt")
     assert response.status_code == 200
     assert client.get("/static/yoq.png").status_code == 404
+
+
+def test_models_are_warmed_up_at_startup(monkeypatch):
+    import app.main as main
+
+    loaded = []
+    monkeypatch.setattr(main, "available_models", lambda: ["rule-based", "buzuq"])
+
+    class Fake:
+        def __init__(self, name):
+            self.name = name
+
+        def predict(self, _text):
+            if self.name == "buzuq":
+                raise RuntimeError("model fayli buzuq")
+            loaded.append(self.name)
+
+    monkeypatch.setattr(main, "get_classifier", Fake)
+    main._warm_up_models()  # buzuq model ilovani toʻxtatmaydi
+    assert loaded == ["rule-based"]

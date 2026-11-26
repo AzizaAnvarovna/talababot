@@ -14,6 +14,7 @@ from app.api import admin, admin_config, analytics, chat, expert, internal, oper
 from app.config import get_settings
 from app.db.session import SessionLocal
 from app.dialog import close_inactive_dialogs
+from app.nlp.classifier import available_models, get_classifier
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -34,8 +35,18 @@ async def _sweep_forever() -> None:
             logger.exception("Faolsiz dialoglarni yopishda xato")
 
 
+def _warm_up_models() -> None:
+    """Modellarni oldindan yuklaydi: aks holda birinchi talaba ~1 s kutadi (NFR-1)."""
+    for name in available_models():
+        try:
+            get_classifier(name).predict("stipendiya qachon tushadi")
+        except Exception:  # model fayli buzuq boʻlsa ham ilova ishga tushsin
+            logger.exception("Modelni oldindan yuklashda xato: %s", name)
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    await asyncio.to_thread(_warm_up_models)
     task = asyncio.create_task(_sweep_forever())
     yield
     task.cancel()
