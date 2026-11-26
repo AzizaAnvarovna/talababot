@@ -7,11 +7,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth import HOME_BY_ROLE, LOGIN_URL, authenticate, require_admin
+from app.config import get_settings
 from app.db.models import KbItem
 from app.db.session import get_db
 from app.kb_import import CATEGORIES, KbImportError, import_workbook
+from app.metrics.dashboard import build_dashboard
+from app.metrics.indicators import LOCAL_OFFSET
 
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
+# Bazada vaqt UTC da saqlanadi; panelda Toshkent vaqti (UTC+5) koʻrsatiladi.
+templates.env.filters["local"] = lambda moment: moment + LOCAL_OFFSET if moment else moment
 
 _MAX_SKIPPED_SHOWN = 20
 
@@ -46,6 +51,7 @@ def login(
         )
     request.session.clear()
     request.session["staff_id"] = staff.id
+    request.session["staff_role"] = staff.role  # menyuni rolga moslash uchun
     return _redirect(HOME_BY_ROLE.get(staff.role, LOGIN_URL))
 
 
@@ -55,9 +61,10 @@ def logout(request: Request):
     return _redirect(LOGIN_URL)
 
 
-@router.get("")
-def admin_home():
-    return _redirect("/admin/kb")
+@router.get("", response_class=HTMLResponse)
+def admin_home(request: Request, db: Session = Depends(get_db)):
+    dashboard = build_dashboard(db, get_settings().test_mode)
+    return templates.TemplateResponse(request, "admin/dashboard.html", {"d": dashboard})
 
 
 @router.get("/kb", response_class=HTMLResponse)

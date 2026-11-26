@@ -1,10 +1,12 @@
 {% extends "admin/base.html" %}
-{% block title %}TalabaBot operator{% endblock %}
+{% import "admin/_ui.html" as ui with context %}
+{% block title %}Operator navbati{% endblock %}
+{% block home %}/operator{% endblock %}
 {% block nav %}
-<div class="d-flex align-items-center gap-3">
-  <a href="/operator">Navbat</a>
-  <form method="post" action="/admin/logout">
-    <button class="btn btn-sm btn-outline-secondary">Chiqish</button>
-  </form>
-</div>
+{% if request.session.get("staff_role", "admin") == "admin" %}
+{{ super() }}
+{% else %}
+{{ ui.section("Ish") }}
+{{ ui.navlink("/operator", "Operator navbati", "operator") }}
+{% endif %}
 {% endblock %}

@@ -1,0 +1,134 @@
+{% extends "admin/base.html" %}
+{% import "admin/_ui.html" as ui with context %}
+{% block title %}Bosh sahifa{% endblock %}
+{% macro pct(value) %}{{ "%d%%"|format(value * 100) if value is not none else "—" }}{% endmacro %}
+{% block content %}
+{% set s = d.settings %}
+{% set months = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"] %}
+
+<section class="hero">
+  <div class="d-flex flex-wrap gap-2 mb-2">
+    {% if d.test_mode %}
+    <span class="pill"><span class="dot warn"></span>Test rejimi</span>
+    {% else %}
+    <span class="pill"><span class="dot ok"></span>Pilot faol</span>
+    {% endif %}
+    {% if s.ab_enabled %}<span class="pill">A/B: {{ s.ab_model_a }} ↔ {{ s.ab_model_b }}</span>
+    {% else %}<span class="pill">Model: {{ s.active_model }}</span>{% endif %}
+  </div>
+  <h1>Assalomu alaykum!</h1>
+  <p>Bugun {{ d.today.day }}-{{ months[d.today.month - 1] }}.
+    {% if d.last_message_at %}Talabaning oxirgi xabari: {{ d.last_message_at.strftime("%d.%m %H:%M") }}.
+    {% else %}Hozircha talabalardan xabar kelmagan — e'lon va QR kodni tarqatishda davom eting.{% endif %}</p>
+</section>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-xl-3">
+    <div class="panel stat">
+      <div class="ico blue">{{ ui.icon("chat", 22) }}</div>
+      <div><div class="label">Suhbatlar</div><div class="value">{{ d.dialogs_total }}</div>
+        <div class="hint">bugun: {{ d.dialogs_today }}</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="panel stat">
+      <div class="ico navy">{{ ui.icon("users", 22) }}</div>
+      <div><div class="label">Talabalar</div><div class="value">{{ d.students }}</div>
+        <div class="hint">rozilik bergan</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="panel stat">
+      <div class="ico green">{{ ui.icon("check", 22) }}</div>
+      <div><div class="label">Muammosi hal boʻldi</div><div class="value">{{ pct(d.resolved_share) }}</div>
+        <div class="hint">“Hal boʻldimi?” javoblari</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="panel stat">
+      <div class="ico gold">{{ ui.icon("smile", 22) }}</div>
+      <div><div class="label">Oʻrtacha baho</div>
+        <div class="value">{{ "%.1f"|format(d.csat_avg) if d.csat_avg is not none else "—" }}<small class="fs-6 text-secondary fw-semibold"> / 5</small></div>
+        <div class="hint">talabalar bahosi</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="panel h-100">
+      <div class="panel-title"><h2>Soʻnggi 14 kun</h2><a href="/admin/analytics">Batafsil tahlil →</a></div>
+      {% if d.daily_max %}
+      <div class="bars" role="img" aria-label="Soʻnggi 14 kundagi suhbatlar soni">
+        {% for day in d.daily %}
+        <div class="bar{% if loop.last %} today{% endif %}" title="{{ day.date.strftime('%d.%m') }}: {{ day.dialogs }} ta suhbat">
+          <small>{{ day.dialogs if day.dialogs else "" }}</small>
+          <div class="bcol{% if not day.dialogs %} zero{% endif %}" style="height: {{ (day.dialogs / d.daily_max * 100)|round if day.dialogs else 2 }}%"></div>
+          <small>{{ day.date.strftime("%d") }}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty">{{ ui.icon("analytics", 40) }}<div>Grafik talabalar yoza boshlagach paydo boʻladi.</div></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="panel h-100">
+      <div class="panel-title"><h2>Eʼtibor talab qiladi</h2></div>
+      <a class="todo" href="/operator">
+        <span class="ico {{ 'red' if d.pending_handoffs else 'green' }}">{{ ui.icon("operator", 18) }}</span>
+        <span><b>{{ d.pending_handoffs }} ta murojaat operatorda</b>
+          <span>{{ "Javob kutmoqda" if d.pending_handoffs else "Navbat boʻsh" }}</span></span>
+        <span class="go">{{ ui.icon("arrow", 18) }}</span>
+      </a>
+      <a class="todo" href="/admin/kb">
+        <span class="ico {{ 'gold' if d.kb_verified < d.kb_total else 'green' }}">{{ ui.icon("kb", 18) }}</span>
+        <span><b>Bilimlar bazasi: {{ d.kb_verified }}/{{ d.kb_total }}</b>
+          <span>{{ (d.kb_total - d.kb_verified) ~ " ta javob tasdiqlanmagan" if d.kb_verified < d.kb_total else "Hammasi tasdiqlangan" }}</span></span>
+        <span class="go">{{ ui.icon("arrow", 18) }}</span>
+      </a>
+      <a class="todo" href="/expert/ahp">
+        <span class="ico {{ 'green' if d.ahp_done else 'gold' }}">{{ ui.icon("ahp", 18) }}</span>
+        <span><b>AHP vaznlari</b><span>{{ "Kiritilgan" if d.ahp_done else "Hali toʻldirilmagan" }}</span></span>
+        <span class="go">{{ ui.icon("arrow", 18) }}</span>
+      </a>
+      <a class="todo" href="/expert">
+        <span class="ico blue">{{ ui.icon("expert", 18) }}</span>
+        <span><b>Dialoglarni baholash</b><span>Pilotdan keyin 50 ta suhbat</span></span>
+        <span class="go">{{ ui.icon("arrow", 18) }}</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <div class="panel-title"><h2>Mavzular boʻyicha</h2></div>
+      {% if d.categories %}
+      {% set top = d.categories[0].dialogs %}
+      {% for row in d.categories[:6] %}
+      <div class="cat-row">
+        <div class="top"><span>{{ row.name }}</span><b>{{ row.dialogs }}</b></div>
+        <div class="meter"><i style="width: {{ (row.dialogs / top * 100)|round }}%"></i></div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="empty">{{ ui.icon("kb", 40) }}<div>Talabalar savollari mavzular boʻyicha shu yerda koʻrinadi.</div></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="panel h-100">
+      <div class="panel-title"><h2>Tizim</h2><a href="/admin/settings">Sozlamalar →</a></div>
+      <div class="kv"><span>Rejim</span><b>{{ "Test" if d.test_mode else "Pilot (haqiqiy maʼlumot)" }}</b></div>
+      <div class="kv"><span>Faol model</span><b>{{ s.active_model }}</b></div>
+      <div class="kv"><span>A/B taqqoslash</span><b>{{ "Yoqilgan" if s.ab_enabled else "Oʻchirilgan" }}</b></div>
+      <div class="kv"><span>Ishonch chegarasi τ</span><b>{{ s.tau }}</b></div>
+      <div class="kv"><span>Oʻxshashlik chegarasi σ</span><b>{{ s.sigma }}</b></div>
+      <div class="kv"><span>Telegram bot</span><b>@buxdu_talababot</b></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

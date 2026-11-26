@@ -12,7 +12,7 @@ from app.security import hash_password, verify_password
 
 LOGIN_URL = "/admin/login"
 ROLES = ("operator", "ekspert", "admin")
-HOME_BY_ROLE = {"admin": "/admin/kb", "operator": "/operator", "ekspert": "/expert"}
+HOME_BY_ROLE = {"admin": "/admin", "operator": "/operator", "ekspert": "/expert"}
 
 # Mavjud boʻlmagan login ham parol tekshiruvi kabi vaqt olishi uchun.
 _DUMMY_HASH = hash_password("dummy-password")

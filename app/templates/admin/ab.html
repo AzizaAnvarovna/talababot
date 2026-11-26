@@ -1,4 +1,5 @@
 {% extends "admin/base.html" %}
+{% block title %}A/B taqqoslash{% endblock %}
 {% macro num(value) %}{{ "%.3f"|format(value) if value is not none else "—" }}{% endmacro %}
 {% macro verdict(p, alpha) %}
 {%- if p is none -%}Maʼlumot yetarli emas

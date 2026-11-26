@@ -1,11 +1,13 @@
 {% extends "admin/base.html" %}
-{% block title %}TalabaBot ekspert{% endblock %}
+{% import "admin/_ui.html" as ui with context %}
+{% block title %}Ekspert paneli{% endblock %}
+{% block home %}/expert{% endblock %}
 {% block nav %}
-<div class="d-flex flex-wrap align-items-center gap-3">
-  <a href="/expert">Dialoglarni baholash</a>
-  <a href="/expert/ahp">AHP soʻrovnomasi</a>
-  <form method="post" action="/admin/logout">
-    <button class="btn btn-sm btn-outline-secondary">Chiqish</button>
-  </form>
-</div>
+{% if request.session.get("staff_role", "admin") == "admin" %}
+{{ super() }}
+{% else %}
+{{ ui.section("Ekspert") }}
+{{ ui.navlink("/expert", "Dialoglarni baholash", "expert", exact=true) }}
+{{ ui.navlink("/expert/ahp", "AHP soʻrovnomasi", "ahp") }}
+{% endif %}
 {% endblock %}

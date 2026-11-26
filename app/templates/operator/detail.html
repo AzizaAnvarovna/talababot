@@ -1,14 +1,29 @@
 {% extends "operator/base.html" %}
+{% block title %}Murojaat{% endblock %}
+{% block head %}
+<style>
+  .thread { background: #f4f7fc !important; }
+  .msg { display: flex; flex-direction: column; margin: 8px 0; }
+  .msg.in { align-items: flex-start; }
+  .msg.out { align-items: flex-end; }
+  .msg .who-line { font-size: 11.5px; color: var(--ink-3); margin: 0 6px 3px; }
+  .msg .bubble { max-width: 80%; padding: 9px 13px; border-radius: 16px; white-space: pre-line; overflow-wrap: anywhere;
+                 font-size: 14.5px; box-shadow: var(--shadow-sm); }
+  .msg.in .bubble { background: #fff; border-bottom-left-radius: 5px; }
+  .msg.out .bubble { background: var(--navy-3); color: #fff; border-bottom-right-radius: 5px; }
+</style>
+{% endblock %}
 {% block content %}
 {% if flash %}<div class="alert alert-info">{{ flash }}</div>{% endif %}
 <div style="max-width: 720px">
   <h1 class="h5">Murojaat #{{ handoff.id }}</h1>
   <p class="text-secondary">{{ category or "Toifa aniqlanmagan" }} · {{ dialog.channel }}</p>
-  <div class="bg-white border rounded p-3 mb-3">
+  <div class="bg-white border rounded p-3 mb-3 thread">
     {% for message in messages %}
-    <div class="mb-2">
-      <div class="small text-secondary">{{ message.sender }} · {{ message.created_at.strftime("%H:%M") }}</div>
-      <div style="white-space: pre-line; overflow-wrap: anywhere">{{ message.text_masked }}</div>
+    {% set mine = message.sender != "talaba" %}
+    <div class="msg {{ 'out' if mine else 'in' }}">
+      <div class="who-line">{{ {"talaba": "Talaba", "bot": "Bot", "operator": "Operator"}.get(message.sender, message.sender) }} · {{ (message.created_at|local).strftime("%d.%m %H:%M") }}</div>
+      <div class="bubble">{{ message.text_masked }}</div>
     </div>
     {% else %}
     <p class="text-secondary mb-0">Xabarlar yoʻq.</p>

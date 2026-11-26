@@ -61,6 +61,26 @@ def test_verified_answer_shows_source_and_logs(client, db_session):
     assert dialog.channel == "web"
 
 
+def test_answer_shows_both_department_and_source(client, db_session):
+    add_kb(db_session)
+    item = db_session.scalars(select(KbItem)).one()
+    item.department = "Registrator ofisi, 64-xona; +998 65 221-26-65"
+    db_session.commit()
+    consent(client)
+    text = post(client, text=QUESTION).json()["text"]
+    assert text == (
+        "Har oyning 25-sanasida.\n\n"
+        "Masʼul boʻlim: Registrator ofisi, 64-xona; +998 65 221-26-65\n"
+        "Manba: Buxgalteriya"
+    )
+
+
+def test_answer_without_extras_is_plain(client, db_session):
+    add_kb(db_session, source=None)
+    consent(client)
+    assert post(client, text=QUESTION).json()["text"] == "Har oyning 25-sanasida."
+
+
 def test_unverified_answer_is_never_shown(client, db_session):
     add_kb(db_session, verified=False)
     consent(client)
@@ -139,3 +159,9 @@ def test_chat_page_renders(client):
     response = client.get("/")
     assert response.status_code == 200
     assert "Operator bilan bog" in response.text
+
+
+def test_static_files_are_served(client):
+    response = client.get("/static/README.txt")
+    assert response.status_code == 200
+    assert client.get("/static/yoq.png").status_code == 404

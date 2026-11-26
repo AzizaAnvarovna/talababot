@@ -173,8 +173,13 @@ def _last_question(db: Session, dialog: Dialog) -> str | None:
 
 
 def _format_answer(item: KbItem) -> str:
-    source = item.source or item.department
-    return f"{item.answer}\n\nManba: {source}" if source else item.answer
+    """Javob, soʻng talaba murojaat qiladigan joy va rasmiy manba (ikkalasi ham boʻlsa ikkalasi)."""
+    extra = []
+    if item.department:
+        extra.append(f"Masʼul boʻlim: {item.department}")
+    if item.source:
+        extra.append(f"Manba: {item.source}")
+    return item.answer + ("\n\n" + "\n".join(extra) if extra else "")
 
 
 def _mark_handed_off(db: Session, dialog: Dialog) -> None:

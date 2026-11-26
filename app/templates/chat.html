@@ -2,42 +2,210 @@
 <html lang="uz">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TalabaBot</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b2a5b">
+  <title>BuxDU TalabaBot</title>
   <style>
-    html, body { height: 100%; }
-    .chat { max-width: 720px; height: 100dvh; }
-    .messages { overflow-y: auto; }
-    .bubble { max-width: 85%; white-space: pre-line; overflow-wrap: anywhere; }
+    :root {
+      --navy: #0b2a5b;
+      --navy-2: #163f7d;
+      --accent: #2a78d6;
+      --bg: #e7edf6;
+      --bubble-bot: #ffffff;
+      --bubble-me: #1d4f91;
+      --text: #14213d;
+      --muted: #6b7a90;
+      --chip-bg: #ffffff;
+      --chip-text: #163f7d;
+      --chip-border: #b9c9e3;
+      --input-bg: #ffffff;
+      --shadow: 0 1px 2px rgba(11, 42, 91, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e1726;
+        --bubble-bot: #1b2638;
+        --bubble-me: #2a5ba3;
+        --text: #e6ecf5;
+        --muted: #8e9bb0;
+        --chip-bg: #1b2638;
+        --chip-text: #9cc2ff;
+        --chip-border: #2d3d57;
+        --input-bg: #1b2638;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+    }
+    .chat {
+      max-width: 760px;
+      height: 100dvh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(42, 120, 214, .07) 0 2px, transparent 3px) 0 0 / 28px 28px,
+        var(--bg);
+    }
+    @media (min-width: 800px) {
+      body { padding: 24px 0; background: linear-gradient(160deg, var(--navy), #061a3a); }
+      .chat { height: calc(100dvh - 48px); border-radius: 18px; overflow: hidden;
+              box-shadow: 0 12px 40px rgba(0, 0, 0, .35); }
+    }
+
+    /* ---------- tepa panel ---------- */
+    header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top));
+      background: var(--navy); color: #fff;
+    }
+    .logo {
+      width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%;
+      background: #fff; display: grid; place-items: center; overflow: hidden;
+      color: var(--navy); font-weight: 800; font-size: 12px; letter-spacing: -.3px;
+    }
+    .logo img { width: 100%; height: 100%; object-fit: contain; }
+    .title { flex: 1; min-width: 0; line-height: 1.2; }
+    .title h1 { margin: 0; font-size: 17px; font-weight: 700;
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 360px) {
+      header { gap: 8px; }
+      .title h1 { font-size: 15.5px; }
+      .icon-btn { width: 36px; height: 36px; flex-basis: 36px; }
+    }
+    .title p { margin: 2px 0 0; font-size: 12.5px; color: #b8c9e6;
+               white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .title p::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 5px;
+                       border-radius: 50%; background: #4cd964; vertical-align: 1px; }
+    .icon-btn {
+      width: 40px; height: 40px; flex: 0 0 40px; border: 0; border-radius: 50%;
+      background: rgba(255, 255, 255, .1); color: #fff; cursor: pointer;
+      display: grid; place-items: center; transition: background .15s;
+    }
+    .icon-btn:hover, .icon-btn:focus-visible { background: rgba(255, 255, 255, .22); outline: none; }
+    .icon-btn svg { width: 20px; height: 20px; }
+
+    /* ---------- xabarlar ---------- */
+    .messages { flex: 1; overflow-y: auto; padding: 14px 10px 6px; }
+    .day { text-align: center; margin: 4px 0 12px; }
+    .day span { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px;
+                background: rgba(11, 42, 91, .35); color: #fff; }
+    .row { display: flex; margin: 3px 0; }
+    .row.me { justify-content: flex-end; }
+    .bubble {
+      position: relative; max-width: min(82%, 520px); padding: 8px 12px 6px;
+      border-radius: 18px; box-shadow: var(--shadow);
+      white-space: pre-line; overflow-wrap: anywhere; font-size: 15px; line-height: 1.4;
+      animation: pop .18s ease-out;
+    }
+    .bot .bubble { background: var(--bubble-bot); border-bottom-left-radius: 6px; }
+    .me .bubble { background: var(--bubble-me); color: #fff; border-bottom-right-radius: 6px; }
+    .time { display: block; text-align: right; font-size: 11px; margin-top: 2px; color: var(--muted); }
+    .me .time { color: #c8d8f2; }
+    .bubble a { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+    .bubble a:hover { text-decoration-thickness: 2px; }
+    @media (prefers-color-scheme: dark) { .bubble a { color: #8fbcff; } }
+    @keyframes pop { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .typing .bubble { padding: 12px 14px; }
+    .typing i { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%;
+                background: var(--muted); animation: blink 1.2s infinite; }
+    .typing i:nth-child(2) { animation-delay: .2s; }
+    .typing i:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+    /* ---------- tezkor tugmalar ---------- */
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 10px 8px; }
+    .actions:empty { display: none; }
+    .chip {
+      border: 1px solid var(--chip-border); background: var(--chip-bg); color: var(--chip-text);
+      border-radius: 18px; padding: 8px 14px; font-size: 14px; font-weight: 600; cursor: pointer;
+      box-shadow: var(--shadow); transition: transform .1s, background .15s;
+    }
+    .chip:hover, .chip:focus-visible { background: var(--accent); color: #fff; border-color: var(--accent); outline: none; }
+    .chip:active { transform: scale(.96); }
+    .chip.star { min-width: 52px; }
+
+    /* ---------- yozish maydoni ---------- */
+    form {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; padding-bottom: max(8px, env(safe-area-inset-bottom));
+      background: var(--bg); border-top: 1px solid rgba(11, 42, 91, .08);
+    }
+    form input {
+      flex: 1; min-width: 0; height: 46px; padding: 0 18px; border-radius: 23px;
+      border: 1px solid var(--chip-border); background: var(--input-bg); color: var(--text);
+      font-size: 16px; outline: none; box-shadow: var(--shadow);
+    }
+    form input:focus { border-color: var(--accent); }
+    .send {
+      width: 46px; height: 46px; flex: 0 0 46px; border: 0; border-radius: 50%;
+      background: var(--navy-2); color: #fff; cursor: pointer; display: grid; place-items: center;
+      transition: transform .1s, background .15s;
+    }
+    .send:hover { background: var(--accent); }
+    .send:active { transform: scale(.94); }
+    .send svg { width: 22px; height: 22px; margin-left: 2px; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   </style>
 </head>
-<body class="bg-light">
-  <main class="chat container d-flex flex-column p-2 p-sm-3">
-    <header class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-      <h1 class="h5 m-0">TalabaBot</h1>
-      <div class="d-flex gap-2">
-        <button id="operator" class="btn btn-sm btn-outline-primary">Operator bilan bogʻlanish</button>
-        <button id="end" class="btn btn-sm btn-outline-secondary">Suhbatni yakunlash</button>
+<body>
+  <main class="chat">
+    <header>
+      <div class="logo" aria-hidden="true">
+        <img src="/static/buxdu_logo.png" alt="" onerror="this.remove()">
+        <span class="logo-text">BuxDU</span>
       </div>
+      <div class="title">
+        <h1>BuxDU TalabaBot</h1>
+        <p>Buxoro davlat universiteti · talabalar yordamchisi</p>
+      </div>
+      <button id="operator" class="icon-btn" type="button"
+              title="Operator bilan bogʻlanish" aria-label="Operator bilan bogʻlanish">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="5" height="7" rx="2"/>
+          <rect x="17" y="14" width="5" height="7" rx="2"/></svg>
+      </button>
+      <button id="end" class="icon-btn" type="button"
+              title="Suhbatni yakunlash" aria-label="Suhbatni yakunlash">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 6 9 17l-5-5"/></svg>
+      </button>
     </header>
-    <section id="messages" class="messages flex-grow-1 bg-white border rounded p-3 mb-2" aria-live="polite"></section>
-    <div id="actions" class="d-flex flex-wrap gap-2 mb-2"></div>
-    <form id="form" class="input-group">
-      <input id="text" class="form-control" maxlength="2000" autocomplete="off"
-             placeholder="Savolingizni yozing..." aria-label="Savol">
-      <button class="btn btn-primary" type="submit">Yuborish</button>
+
+    <section id="messages" class="messages" aria-live="polite"></section>
+    <div id="actions" class="actions"></div>
+    <form id="form">
+      <label for="text" class="visually-hidden">Savol</label>
+      <input id="text" maxlength="2000" autocomplete="off" enterkeyhint="send"
+             placeholder="Savolingizni yozing...">
+      <button class="send" type="submit" aria-label="Yuborish" title="Yuborish">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z"/></svg>
+      </button>
     </form>
   </main>
   <script>
     const USER_KEY = "talababot_user_id";
     const HISTORY_KEY = "talababot_history";
-    // Bu ikki amal yuqoridagi doimiy tugmalarda bor.
+    // Bu ikki amal tepadagi doimiy tugmalarda bor.
     const PERMANENT_ACTIONS = ["operator", "end"];
     const messages = document.getElementById("messages");
     const actions = document.getElementById("actions");
     const form = document.getElementById("form");
     const input = document.getElementById("text");
+
+    // Logotip fayli (app/static/buxdu_logo.png) boʻlsa rasm, boʻlmasa "BuxDU" yozuvi.
+    const logoImg = document.querySelector(".logo img");
+    if (logoImg) {
+      const hideText = () => document.querySelector(".logo-text")?.remove();
+      if (logoImg.complete && logoImg.naturalWidth) hideText();
+      else logoImg.addEventListener("load", hideText);
+    }
 
     function read(key) {
       try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -54,37 +222,121 @@
       }
       return id;
     }
+    function now() {
+      const d = new Date();
+      return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    }
+    function dayKey(d = new Date()) {
+      return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
+    function dayLabel(key) {
+      const today = new Date();
+      const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+      if (key === dayKey(today)) return "Bugun";
+      if (key === dayKey(yesterday)) return "Kecha";
+      const [y, m, d] = key.split("-");
+      return d + "." + m + "." + y;
+    }
+    // Kun almashganda “Bugun / Kecha / sana” ajratgichi chiziladi.
+    let lastDay = null;
+    function separator(key) {
+      if (!key || key === lastDay) return;
+      lastDay = key;
+      const el = document.createElement("div");
+      el.className = "day";
+      el.innerHTML = "<span></span>";
+      el.firstChild.textContent = dayLabel(key);
+      messages.appendChild(el);
+    }
 
     let history = [];
     try { history = JSON.parse(read(HISTORY_KEY)) || []; } catch (e) { history = []; }
 
-    function draw(sender, text) {
+    // Bot javobidagi sayt manzili, email va telefonni bosiladigan havolaga aylantiradi.
+    // Matn faqat textContent orqali qoʻshiladi, shuning uchun HTML kiritib boʻlmaydi.
+    const LINK = new RegExp(
+      "([\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+)" +                                   // email
+      "|((?:https?:\\/\\/)?(?:[a-z0-9-]+\\.)+(?:uz|com|org|net|ru|edu|gov|io)" +  // sayt
+      "(?:\\/[^\\s«»\"“”<>]*)?)" +
+      "|(\\+998[\\s-]?\\d{2}[\\s-]?\\d{3}[\\s-]?\\d{2}[\\s-]?\\d{2})",           // telefon
+      "gi");
+    function appendLinked(parent, text) {
+      let last = 0;
+      for (const match of text.matchAll(LINK)) {
+        let [whole, email, url, phone] = match;
+        let start = match.index;
+        // Gap oxiridagi nuqta, vergul, qavs havolaga kirmasin.
+        const trail = (whole.match(/[.,;:!?)]+$/) || [""])[0];
+        if (trail) { whole = whole.slice(0, -trail.length); if (url) url = whole; }
+        if (start > last) parent.appendChild(document.createTextNode(text.slice(last, start)));
+        const a = document.createElement("a");
+        a.textContent = whole;
+        if (email) a.href = "mailto:" + whole;
+        else if (phone) a.href = "tel:" + whole.replace(/[\s-]/g, "");
+        else { a.href = /^https?:\/\//i.test(url) ? url : "https://" + url; a.target = "_blank"; a.rel = "noopener"; }
+        parent.appendChild(a);
+        last = start + whole.length;
+      }
+      if (last < text.length) parent.appendChild(document.createTextNode(text.slice(last)));
+    }
+
+    function draw(sender, text, time, day) {
+      separator(day);
       const row = document.createElement("div");
-      row.className = "d-flex mb-2 " + (sender === "me" ? "justify-content-end" : "");
+      row.className = "row " + (sender === "me" ? "me" : "bot");
       const bubble = document.createElement("div");
-      bubble.className = "bubble rounded px-3 py-2 " + (sender === "me" ? "bg-primary text-white" : "bg-body-secondary");
-      bubble.textContent = text;
+      bubble.className = "bubble";
+      if (sender === "me") bubble.textContent = text;
+      else appendLinked(bubble, text);
+      if (time) {
+        const stamp = document.createElement("span");
+        stamp.className = "time";
+        stamp.textContent = time;
+        bubble.appendChild(stamp);
+      }
       row.appendChild(bubble);
       messages.appendChild(row);
       messages.scrollTop = messages.scrollHeight;
     }
     function add(sender, text) {
-      draw(sender, text);
-      history.push([sender, text]);
+      const time = now();
+      const day = dayKey();
+      draw(sender, text, time, day);
+      history.push([sender, text, time, day]);
       write(HISTORY_KEY, JSON.stringify(history.slice(-100)));
     }
+
+    let typingRow = null;
+    function typing(on) {
+      if (on && !typingRow) {
+        typingRow = document.createElement("div");
+        typingRow.className = "row bot typing";
+        typingRow.innerHTML = '<div class="bubble" aria-label="Bot yozmoqda"><i></i><i></i><i></i></div>';
+        messages.appendChild(typingRow);
+        messages.scrollTop = messages.scrollHeight;
+      } else if (!on && typingRow) {
+        typingRow.remove();
+        typingRow = null;
+      }
+    }
+
     function showButtons(buttons) {
       actions.replaceChildren();
       for (const button of buttons.filter(b => !PERMANENT_ACTIONS.includes(b.action))) {
         const el = document.createElement("button");
-        el.className = "btn btn-sm btn-outline-primary";
-        el.textContent = button.label;
-        el.addEventListener("click", () => { add("me", button.label); send({ action: button.action }); });
+        const isRating = button.action.startsWith("rate:");
+        el.type = "button";
+        el.className = "chip" + (isRating ? " star" : "");
+        el.textContent = isRating ? button.label + " ★" : button.label;
+        el.addEventListener("click", () => { add("me", el.textContent); send({ action: button.action }); });
         actions.appendChild(el);
       }
+      // Tugmalar paydo boʻlganda oxirgi xabar ular ortida qolmasin.
+      messages.scrollTop = messages.scrollHeight;
     }
 
     async function send(body, showReply = true) {
+      if (showReply) typing(true);
       try {
         const response = await fetch("/api/chat/message", {
           method: "POST",
@@ -93,10 +345,12 @@
         });
         if (!response.ok) throw new Error(String(response.status));
         const reply = await response.json();
+        typing(false);
         if (showReply) add("bot", reply.text);
         showButtons(reply.buttons);
       } catch (e) {
-        draw("bot", "Xatolik yuz berdi. Qayta urinib koʻring.");
+        typing(false);
+        draw("bot", "Xatolik yuz berdi. Qayta urinib koʻring.", now(), dayKey());
       }
     }
 
@@ -111,8 +365,8 @@
     document.getElementById("operator").addEventListener("click", () => send({ action: "operator" }));
     document.getElementById("end").addEventListener("click", () => send({ action: "end" }));
 
-    history.forEach(([sender, text]) => draw(sender, text));
-    // Tarix tiklangan bo'lsa, "Savolingizni yozing" qayta chiqmasin.
+    history.forEach(([sender, text, time, day]) => draw(sender, text, time, day));
+    // Tarix tiklangan boʻlsa, "Savolingizni yozing" qayta chiqmasin.
     send({ action: "start" }, history.length === 0);
 
     // Operator javobi va baholash soʻrovi shu yerdan keladi.

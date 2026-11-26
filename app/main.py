@@ -3,9 +3,11 @@ import contextlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api import admin, admin_config, analytics, chat, expert, internal, operator
@@ -63,6 +65,8 @@ app.include_router(admin_config.router)
 app.include_router(operator.router)
 app.include_router(analytics.router)
 app.include_router(expert.router)
+# Veb-chat logotipi va boshqa statik fayllar (masalan, app/static/buxdu_logo.png).
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
