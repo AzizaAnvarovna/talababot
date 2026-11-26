@@ -15,6 +15,8 @@ from docx.shared import Cm, Pt, RGBColor
 
 TEMPLATE = Path("data/Murojaatlar_yigish_shabloni.xlsx")
 OUT = Path(sys.argv[1])
+# --faqat-jadval: ariza va bot haqidagi sahifalarsiz, faqat dekanat toʻldiradigan jadval
+ONLY_TABLE = "--faqat-jadval" in sys.argv[2:]
 
 NAMES = {
     "dars_jadvali": "Dars jadvali",
@@ -129,86 +131,87 @@ sec.page_width, sec.page_height = Cm(21), Cm(29.7)
 sec.left_margin, sec.right_margin = Cm(2.5), Cm(1.5)
 sec.top_margin, sec.bottom_margin = Cm(2), Cm(2)
 
-# ---------- 1. Ariza ----------
-for line in (
-    "[Fakultet nomi] fakulteti dekani",
-    "[F.I.Sh.]ga",
-    "[Yoʻnalish] magistranti",
-    "[F.I.Sh.]dan",
-):
-    para(doc, line, align=WD_ALIGN_PARAGRAPH.RIGHT, after=0)
-para(doc, after=12)
-para(doc, "ARIZA", bold=True, size=14, align=WD_ALIGN_PARAGRAPH.CENTER, after=12)
+if not ONLY_TABLE:
+    # ---------- 1. Ariza ----------
+    for line in (
+        "[Fakultet nomi] fakulteti dekani",
+        "[F.I.Sh.]ga",
+        "[Yoʻnalish] magistranti",
+        "[F.I.Sh.]dan",
+    ):
+        para(doc, line, align=WD_ALIGN_PARAGRAPH.RIGHT, after=0)
+    para(doc, after=12)
+    para(doc, "ARIZA", bold=True, size=14, align=WD_ALIGN_PARAGRAPH.CENTER, after=12)
 
-body = [
-    "Men magistrlik dissertatsiyam doirasida (ilmiy rahbar: prof. Eshankulov H.I.) talabalarning "
-    "tez-tez beriladigan savollariga avtomatik javob beradigan “TalabaBot” Telegram botini ishlab chiqdim "
-    "(@buxdu_talababot). Bot talaba savolini tushunib, rasmiy tasdiqlangan javobni beradi, javobini "
-    "bilmagan holatda esa savolni masʼul xodimga yoʻnaltiradi.",
-    "Dissertatsiyaning tajriba qismi uchun botni 3 hafta davomida talabalar ishtirokida sinovdan "
-    "oʻtkazish (pilot) rejalashtirilgan. Shu munosabat bilan Sizdan quyidagilarni soʻrayman:",
-]
-for t in body:
-    p = para(doc, t, after=6)
+    body = [
+        "Men magistrlik dissertatsiyam doirasida (ilmiy rahbar: prof. Eshankulov H.I.) talabalarning "
+        "tez-tez beriladigan savollariga avtomatik javob beradigan “TalabaBot” Telegram botini ishlab chiqdim "
+        "(@buxdu_talababot). Bot talaba savolini tushunib, rasmiy tasdiqlangan javobni beradi, javobini "
+        "bilmagan holatda esa savolni masʼul xodimga yoʻnaltiradi.",
+        "Dissertatsiyaning tajriba qismi uchun botni 3 hafta davomida talabalar ishtirokida sinovdan "
+        "oʻtkazish (pilot) rejalashtirilgan. Shu munosabat bilan Sizdan quyidagilarni soʻrayman:",
+    ]
+    for t in body:
+        p = para(doc, t, after=6)
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p.paragraph_format.first_line_indent = Cm(1.25)
+    for t in (
+        "bot havolasi va QR kodini fakultet talabalari guruhlariga tarqatishga ruxsat berishingizni;",
+        "ilovadagi shakl boʻyicha talabalar koʻp beradigan 34 ta savolga rasmiy javoblarni "
+        "tegishli xodimlar orqali tayyorlab berishda yordam koʻrsatishingizni.",
+    ):
+        p = doc.add_paragraph(style="List Number")
+        p.add_run(t)
+        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p = para(
+        doc,
+        "Bot talabalarning ismi va telefon raqamini saqlamaydi, foydalanuvchilar anonim identifikator "
+        "bilan qayd etiladi, maʼlumotlar faqat ilmiy tadqiqot maqsadida ishlatiladi.",
+    )
     p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p.paragraph_format.first_line_indent = Cm(1.25)
-for t in (
-    "bot havolasi va QR kodini fakultet talabalari guruhlariga tarqatishga ruxsat berishingizni;",
-    "ilovadagi shakl boʻyicha talabalar koʻp beradigan 34 ta savolga rasmiy javoblarni "
-    "tegishli xodimlar orqali tayyorlab berishda yordam koʻrsatishingizni.",
-):
-    p = doc.add_paragraph(style="List Number")
-    p.add_run(t)
-    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-p = para(
-    doc,
-    "Bot talabalarning ismi va telefon raqamini saqlamaydi, foydalanuvchilar anonim identifikator "
-    "bilan qayd etiladi, maʼlumotlar faqat ilmiy tadqiqot maqsadida ishlatiladi.",
-)
-p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-p.paragraph_format.first_line_indent = Cm(1.25)
-para(doc, after=6)
-para(doc, "Ilova: bot haqida qisqacha maʼlumot va javoblar shakli.", italic=True, after=24)
-t = doc.add_table(rows=1, cols=2)
-t.cell(0, 0).text = "“___” __________ 2026-yil"
-t.cell(0, 1).text = "_____________ [F.I.Sh.]"
-t.cell(0, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    para(doc, after=6)
+    para(doc, "Ilova: bot haqida qisqacha maʼlumot va javoblar shakli.", italic=True, after=24)
+    t = doc.add_table(rows=1, cols=2)
+    t.cell(0, 0).text = "“___” __________ 2026-yil"
+    t.cell(0, 1).text = "_____________ [F.I.Sh.]"
+    t.cell(0, 1).paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
-# ---------- 2. Bot haqida ----------
-doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
-heading(doc, "Ilova. “TalabaBot” haqida qisqacha maʼlumot")
-heading(doc, "Bot nima qiladi", 2)
-for t in (
-    "Talaba Telegram orqali savolini oʻz soʻzlari bilan yozadi (lotin yoki kirill harflarida).",
-    "Bot savolning mavzusini aniqlaydi (stipendiya, yotoqxona, hujjatlar va h.k.) va bilimlar bazasidagi "
-    "rasmiy javobni beradi.",
-    "Javob topilmasa yoki talaba javobdan qoniqmasa, savol masʼul xodimga yoʻnaltiriladi.",
-    "Bot faqat dekanat tasdiqlagan javoblarni beradi, oʻzidan javob toʻqimaydi.",
-):
-    bullet(doc, t)
-heading(doc, "Pilot qanday oʻtadi", 2)
-for t in (
-    "Muddati: 3 hafta.",
-    "Bot havolasi va QR kod guruh sardorlari orqali guruhlarga tarqatiladi.",
-    "Talabalardan qatnashishga rozilik soʻraladi; ism va telefon raqami saqlanmaydi.",
-    "Natijalar (savollar soni, toʻgʻri javoblar ulushi, talabalar fikri) dissertatsiyada umumlashtirilgan "
-    "holda keltiriladi.",
-):
-    bullet(doc, t)
-heading(doc, "Dekanatdan nima soʻraladi", 2)
-for t in (
-    "Keyingi sahifalardagi jadvalda talabalar koʻp beradigan 34 ta savol mavzusi va savol namunalari berilgan.",
-    "Har bir mavzu uchun “Rasmiy javob” ustuniga qisqa (1–5 gap) toʻgʻri javob yozilsa kifoya: "
-    "nima qilish kerak, qayerga borish kerak, qanday hujjat kerak, muddati qachon.",
-    "“Masʼul boʻlim” ustuniga savol boʻyicha murojaat qilinadigan boʻlim (xona raqami, ish vaqti, "
-    "telefon yoki havola) yoziladi.",
-    "Javobi aniq boʻlmagan mavzuni boʻsh qoldirish mumkin: bot bunday savolni masʼul xodimga yoʻnaltiradi.",
-    "Shaklni qoʻlda yoki kompyuterda toʻldirish mumkin.",
-):
-    bullet(doc, t)
+    # ---------- 2. Bot haqida ----------
+    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+    heading(doc, "Ilova. “TalabaBot” haqida qisqacha maʼlumot")
+    heading(doc, "Bot nima qiladi", 2)
+    for t in (
+        "Talaba Telegram orqali savolini oʻz soʻzlari bilan yozadi (lotin yoki kirill harflarida).",
+        "Bot savolning mavzusini aniqlaydi (stipendiya, yotoqxona, hujjatlar va h.k.) va bilimlar bazasidagi "
+        "rasmiy javobni beradi.",
+        "Javob topilmasa yoki talaba javobdan qoniqmasa, savol masʼul xodimga yoʻnaltiriladi.",
+        "Bot faqat dekanat tasdiqlagan javoblarni beradi, oʻzidan javob toʻqimaydi.",
+    ):
+        bullet(doc, t)
+    heading(doc, "Pilot qanday oʻtadi", 2)
+    for t in (
+        "Muddati: 3 hafta.",
+        "Bot havolasi va QR kod guruh sardorlari orqali guruhlarga tarqatiladi.",
+        "Talabalardan qatnashishga rozilik soʻraladi; ism va telefon raqami saqlanmaydi.",
+        "Natijalar (savollar soni, toʻgʻri javoblar ulushi, talabalar fikri) dissertatsiyada umumlashtirilgan "
+        "holda keltiriladi.",
+    ):
+        bullet(doc, t)
+    heading(doc, "Dekanatdan nima soʻraladi", 2)
+    for t in (
+        "Keyingi sahifalardagi jadvalda talabalar koʻp beradigan 34 ta savol mavzusi va savol namunalari berilgan.",
+        "Har bir mavzu uchun “Rasmiy javob” ustuniga qisqa (1–5 gap) toʻgʻri javob yozilsa kifoya: "
+        "nima qilish kerak, qayerga borish kerak, qanday hujjat kerak, muddati qachon.",
+        "“Masʼul boʻlim” ustuniga savol boʻyicha murojaat qilinadigan boʻlim (xona raqami, ish vaqti, "
+        "telefon yoki havola) yoziladi.",
+        "Javobi aniq boʻlmagan mavzuni boʻsh qoldirish mumkin: bot bunday savolni masʼul xodimga yoʻnaltiradi.",
+        "Shaklni qoʻlda yoki kompyuterda toʻldirish mumkin.",
+    ):
+        bullet(doc, t)
 
 # ---------- 3. Jadval (albom) ----------
-land = doc.add_section()
+land = doc.sections[0] if ONLY_TABLE else doc.add_section()
 land.orientation = WD_ORIENT.LANDSCAPE
 land.page_width, land.page_height = Cm(29.7), Cm(21)
 land.left_margin = land.right_margin = Cm(1.5)
@@ -222,6 +225,17 @@ para(
     size=11,
     after=8,
 )
+if ONLY_TABLE:
+    for t in (
+        "“Rasmiy javob” ustuniga qisqa (1–5 gap) javob yozing: nima qilish kerak, qayerga borish kerak, "
+        "qanday hujjat kerak, muddati qachon.",
+        "“Masʼul boʻlim” ustuniga murojaat qilinadigan boʻlim, xona raqami, ish vaqti, telefon yoki havolani yozing.",
+        "Javobi aniq boʻlmagan mavzuni boʻsh qoldirish mumkin: bot bunday savolni masʼul xodimga yoʻnaltiradi.",
+    ):
+        b = bullet(doc, t)
+        for r in b.runs:
+            r.font.size = Pt(11)
+    para(doc, after=4)
 
 widths = [Cm(1.0), Cm(4.3), Cm(7.0), Cm(9.7), Cm(4.7)]
 heads = [
@@ -312,14 +326,17 @@ def line(doc):
 
 
 para(doc, after=6)
-para(
+extra = para(
     doc,
     "Qoʻshimcha: talabalar tez-tez beradigan, lekin jadvalda yoʻq savollar boʻlsa, shu yerga yozing:",
     size=11,
     after=4,
 )
-for _ in range(3):
+extra.paragraph_format.keep_with_next = True  # sarlavha chiziqlardan ajralmasin
+for i in range(3):
     line(doc)
+    if i < 2:
+        doc.paragraphs[-1].paragraph_format.keep_with_next = True
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 doc.save(OUT)
