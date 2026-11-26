@@ -1,0 +1,18 @@
+{
+  "train": "sunʼiy 500",
+  "test": "forma 100",
+  "results": {
+    "rule-based": {
+      "accuracy": 0.63,
+      "macro_f1": 0.6510683760683761
+    },
+    "naive-bayes": {
+      "accuracy": 0.7,
+      "macro_f1": 0.6981694356694357
+    },
+    "svm": {
+      "accuracy": 0.69,
+      "macro_f1": 0.7199770045981319
+    }
+  }
+}
