@@ -17,6 +17,10 @@ from app.metrics.indicators import LOCAL_OFFSET
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
 # Bazada vaqt UTC da saqlanadi; panelda Toshkent vaqti (UTC+5) koʻrsatiladi.
 templates.env.filters["local"] = lambda moment: moment + LOCAL_OFFSET if moment else moment
+templates.env.filters["dmy"] = lambda day: day.strftime("%d.%m.%Y") if day else ""
+# Panelda model nomlari oʻzbekcha koʻrsatiladi (qiymati oʻzgarmaydi).
+MODEL_LABELS = {"rule-based": "Qoidaga asoslangan", "svm": "SVM", "transformer": "Transformer"}
+templates.env.filters["model_label"] = lambda name: MODEL_LABELS.get(name, name)
 
 _MAX_SKIPPED_SHOWN = 20
 

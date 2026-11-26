@@ -2,7 +2,7 @@
 
 import csv
 from dataclasses import asdict
-from datetime import date
+from datetime import date, datetime
 from io import BytesIO, StringIO
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -34,8 +34,14 @@ _XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def _parse_date(raw: str) -> date | None:
+    """2026-12-01 (ISO) yoki 01.12.2026 (panel sana maydoni) koʻrinishini qabul qiladi."""
+    raw = raw.strip()
     try:
         return date.fromisoformat(raw)
+    except ValueError:
+        pass
+    try:
+        return datetime.strptime(raw, "%d.%m.%Y").date()
     except ValueError:
         return None
 

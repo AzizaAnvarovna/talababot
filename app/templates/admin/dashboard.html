@@ -13,8 +13,8 @@
     {% else %}
     <span class="pill"><span class="dot ok"></span>Pilot faol</span>
     {% endif %}
-    {% if s.ab_enabled %}<span class="pill">A/B: {{ s.ab_model_a }} ↔ {{ s.ab_model_b }}</span>
-    {% else %}<span class="pill">Model: {{ s.active_model }}</span>{% endif %}
+    {% if s.ab_enabled %}<span class="pill">A/B: {{ s.ab_model_a|model_label }} ↔ {{ s.ab_model_b|model_label }}</span>
+    {% else %}<span class="pill">Model: {{ s.active_model|model_label }}</span>{% endif %}
   </div>
   <h1>Assalomu alaykum!</h1>
   <p>Bugun {{ d.today.day }}-{{ months[d.today.month - 1] }}.
@@ -123,11 +123,14 @@
     <div class="panel h-100">
       <div class="panel-title"><h2>Tizim</h2><a href="/admin/settings">Sozlamalar →</a></div>
       <div class="kv"><span>Rejim</span><b>{{ "Test" if d.test_mode else "Pilot (haqiqiy maʼlumot)" }}</b></div>
-      <div class="kv"><span>Faol model</span><b>{{ s.active_model }}</b></div>
+      <div class="kv"><span>Faol model</span><b>{{ s.active_model|model_label }}</b></div>
       <div class="kv"><span>A/B taqqoslash</span><b>{{ "Yoqilgan" if s.ab_enabled else "Oʻchirilgan" }}</b></div>
       <div class="kv"><span>Ishonch chegarasi τ</span><b>{{ s.tau }}</b></div>
       <div class="kv"><span>Oʻxshashlik chegarasi σ</span><b>{{ s.sigma }}</b></div>
-      <div class="kv"><span>Telegram bot</span><b>@buxdu_talababot</b></div>
+      <div class="kv"><span>Telegram bot</span>
+        <a class="fw-bold text-decoration-none" href="https://t.me/buxdu_talababot" target="_blank" rel="noopener"
+           data-tg="tg://resolve?domain=buxdu_talababot" onclick="return openTelegram(this, event)"
+           title="Botni Telegram'da ochish">@buxdu_talababot ↗</a></div>
     </div>
   </div>
 </div>

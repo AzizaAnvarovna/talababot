@@ -145,6 +145,9 @@
     .form-control-sm, .form-select-sm { border-radius: 8px; padding: .3rem .6rem; }
     .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(42, 120, 214, .14); }
     .form-check-input:checked { background-color: var(--navy-2); border-color: var(--navy-2); }
+    /* Filtrlardagi model tanlovi va sana maydonlari matni sigʻishi uchun */
+    .content form.row .form-select { min-width: 190px; }
+    .content form.row .date-field { width: 132px; font-variant-numeric: tabular-nums; }
     .alert { border-radius: 12px; border: 1px solid transparent; font-size: 14px; }
     .alert-info { background: #ebf3fe; color: #163f7d; border-color: #d3e4fb; }
     .alert-warning { background: #fff6e5; color: #7a5200; border-color: #f7e2b4; }
@@ -231,6 +234,16 @@
                               background: #f2f5fa; }
     .login-foot { margin-top: 18px; text-align: center; font-size: 12px; color: var(--ink-3); }
   </style>
+  <script>
+    // Sana maydoni: raqam yozilganda nuqtalar oʻzi qoʻyiladi (01122026 → 01.12.2026).
+    document.addEventListener("input", event => {
+      const field = event.target;
+      if (!field.classList || !field.classList.contains("date-field")) return;
+      const digits = field.value.replace(/\D/g, "").slice(0, 8);
+      const parts = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean);
+      field.value = parts.join(".");
+    });
+  </script>
   {% block head %}{% endblock %}
 </head>
 {% if bare %}
@@ -279,11 +292,28 @@
       {% endblock %}
     </nav>
     <div class="side-footer">
+      {# Avval Telegram ilovasi (tg://) ochiladi; ilova yoʻq boʻlsa, 1,5 s dan keyin t.me veb-sahifasi. #}
       <a class="side-card" href="https://t.me/buxdu_talababot" target="_blank" rel="noopener"
-         title="Botni Telegram'da ochish">
+         title="Botni Telegram'da ochish" data-tg="tg://resolve?domain=buxdu_talababot"
+         onclick="return openTelegram(this, event)">
         <span><span class="dot ok"></span><b>Telegram bot</b><br>@buxdu_talababot</span>
         {{ ui.icon("arrow", 16) }}
       </a>
+      <script>
+        function openTelegram(link, event) {
+          event.preventDefault();
+          let left = false;
+          const mark = () => { left = true; };
+          window.addEventListener("blur", mark, { once: true });
+          document.addEventListener("visibilitychange", mark, { once: true });
+          window.location.href = link.dataset.tg;
+          setTimeout(() => {
+            window.removeEventListener("blur", mark);
+            if (!left) window.open(link.href, "_blank", "noopener");
+          }, 1500);
+          return false;
+        }
+      </script>
       <form method="post" action="/admin/logout">
         <button class="btn btn-sm btn-outline-light">Chiqish</button>
       </form>

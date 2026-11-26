@@ -11,17 +11,17 @@
 <form method="get" class="row g-2 align-items-end mb-3">
   <div class="col-6 col-md-auto">
     <label class="form-label small mb-1" for="date_from">Boshlanish</label>
-    <input class="form-control form-control-sm" type="date" id="date_from" name="date_from" value="{{ filters.date_from or '' }}">
+    <input class="form-control form-control-sm date-field" type="text" inputmode="numeric" autocomplete="off" placeholder="kk.oo.yyyy" pattern="[0-9]{2}[.][0-9]{2}[.][0-9]{4}" maxlength="10" title="Masalan: 01.12.2026" id="date_from" name="date_from" value="{{ filters.date_from|dmy }}">
   </div>
   <div class="col-6 col-md-auto">
     <label class="form-label small mb-1" for="date_to">Tugash</label>
-    <input class="form-control form-control-sm" type="date" id="date_to" name="date_to" value="{{ filters.date_to or '' }}">
+    <input class="form-control form-control-sm date-field" type="text" inputmode="numeric" autocomplete="off" placeholder="kk.oo.yyyy" pattern="[0-9]{2}[.][0-9]{2}[.][0-9]{4}" maxlength="10" title="Masalan: 01.12.2026" id="date_to" name="date_to" value="{{ filters.date_to|dmy }}">
   </div>
   <div class="col-12 col-md-auto">
     <label class="form-label small mb-1" for="model">Model</label>
     <select class="form-select form-select-sm" id="model" name="model">
       <option value="">Barchasi</option>
-      {% for model in models %}<option {% if filters.model == model %}selected{% endif %}>{{ model }}</option>{% endfor %}
+      {% for model in models %}<option value="{{ model }}" {% if filters.model == model %}selected{% endif %}>{{ model|model_label }}</option>{% endfor %}
     </select>
   </div>
   <div class="col-12 col-md-auto form-check ms-md-2 mb-1">

@@ -310,3 +310,27 @@ def test_ab_exports(admin_client, db_session):
         BytesIO(admin_client.get(f"/admin/analytics/ab/export.xlsx{query}").content)
     )
     assert book.sheetnames == ["A-B"]
+
+
+def test_parse_date_accepts_iso_and_panel_format():
+    from app.api.analytics import _parse_date
+
+    assert _parse_date("2026-12-01") == date(2026, 12, 1)
+    assert _parse_date(" 01.12.2026 ") == date(2026, 12, 1)
+    assert _parse_date("31.02.2026") is None
+    assert _parse_date("") is None
+
+
+def test_filters_show_uzbek_dates_and_model_names(admin_client):
+    page = admin_client.get("/admin/analytics/ab?date_from=01.12.2026&date_to=2026-12-21").text
+    assert 'value="01.12.2026"' in page and 'value="21.12.2026"' in page
+    assert 'type="date"' not in page
+    assert ">Qoidaga asoslangan</option>" in page
+    assert "A: Qoidaga asoslangan" in page
+
+
+def test_settings_and_dashboard_show_uzbek_model_names(admin_client):
+    settings_page = admin_client.get("/admin/settings").text
+    assert '<option value="rule-based" selected>Qoidaga asoslangan</option>' in settings_page
+    assert ">rule-based<" not in settings_page
+    assert "Qoidaga asoslangan" in admin_client.get("/admin").text

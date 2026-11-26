@@ -62,6 +62,7 @@ def test_dashboard_page(admin_client):
     assert "Eʼtibor talab qiladi" in page.text
     assert "Grafik talabalar yoza boshlagach" in page.text
     assert 'href="https://t.me/buxdu_talababot"' in page.text
+    assert page.text.count('data-tg="tg://resolve?domain=buxdu_talababot"') == 2
 
 
 def test_operator_pages_show_tashkent_time(admin_client, db_session):
