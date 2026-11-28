@@ -24,6 +24,7 @@ def _undelivered():
 def _payload(message: Message) -> dict:
     return {
         "id": message.id,
+        "sender": message.sender,
         "text": decrypt(message.outbox_text) if message.outbox_text else message.text_masked,
         "buttons": json.loads(message.buttons_json or "[]"),
     }

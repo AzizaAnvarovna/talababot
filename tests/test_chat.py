@@ -185,3 +185,56 @@ def test_models_are_warmed_up_at_startup(monkeypatch):
     monkeypatch.setattr(main, "get_classifier", Fake)
     main._warm_up_models()  # buzuq model ilovani toʻxtatmaydi
     assert loaded == ["rule-based"]
+
+
+def test_verified_answer_carries_category_and_title(client, db_session):
+    add_kb(db_session)
+    consent(client)
+    data = post(client, text=QUESTION).json()
+    assert (data["category"], data["title"]) == ("Stipendiya", QUESTION)
+
+
+def test_topic_button_answers_directly_and_logs_like_a_question(client, db_session):
+    add_kb(db_session)
+    consent(client)
+    item = db_session.scalars(select(KbItem)).one()
+    data = post(client, action=f"kb:{item.id}").json()
+    assert data["response_type"] == "kb"
+    assert data["text"].startswith("Har oyning 25-sanasida.")
+    student = db_session.scalars(select(Message).where(Message.sender == "talaba")).one()
+    assert (student.text_masked, student.intent, student.confidence) == (
+        QUESTION,
+        "Stipendiya",
+        1.0,
+    )
+
+
+def test_unverified_or_missing_topic_is_refused(client, db_session):
+    add_kb(db_session, verified=False)
+    consent(client)
+    item = db_session.scalars(select(KbItem)).one()
+    for action in (f"kb:{item.id}", "kb:999"):
+        data = post(client, action=action).json()
+        assert data["response_type"] == "system"
+    assert db_session.scalars(select(Message)).all() == []
+
+
+def test_topic_while_waiting_for_operator_keeps_waiting(client, db_session):
+    add_kb(db_session)
+    consent(client)
+    post(client, action="operator")
+    item = db_session.scalars(select(KbItem)).one()
+    data = post(client, action=f"kb:{item.id}").json()
+    assert data["response_type"] == "operator"
+
+
+def test_internal_topics_lists_only_verified(client, db_session):
+    from app.config import get_settings
+
+    add_kb(db_session)
+    add_kb(db_session, verified=False)
+    headers = {"X-Internal-Token": get_settings().bot_api_token}
+    topics = client.get("/api/internal/topics?category=Stipendiya", headers=headers).json()
+    assert [t["title"] for t in topics] == [QUESTION]
+    assert client.get("/api/internal/topics?category=Yoq", headers=headers).status_code == 404
+    assert client.get("/api/internal/topics?category=Stipendiya").status_code == 403

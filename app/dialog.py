@@ -23,6 +23,7 @@ from app.security import encrypt, hash_user_id
 from app.settings_store import RuntimeSettings, load_settings, load_slang
 
 CATEGORY_ACTION_PREFIX = "category:"
+KB_ACTION_PREFIX = "kb:"
 CONTEXT_TTL = timedelta(minutes=10)
 INACTIVITY_LIMIT = timedelta(minutes=10)
 
@@ -40,6 +41,7 @@ RATE_PROMPT = "Xizmatni 1 dan 5 gacha baholang."
 THANKS = "Rahmat! Yangi savolingiz boʻlsa, yozishingiz mumkin."
 NO_ACTIVE_DIALOG = "Faol suhbat yoʻq. Savolingizni yozishingiz mumkin."
 YOU_ARE_WELCOME = "Arzimaydi! Yangi savolingiz boʻlsa, yozishingiz mumkin."
+TOPIC_GONE = "Bu mavzu hozir mavjud emas. Savolingizni yozib yuboring."
 
 _OPERATOR_WORD = re.compile(r"(?<!\w)operator")
 _CLOSING_WORDS = frozenset({"rahmat", "raxmat", "tashakkur", "xayr"})
@@ -58,6 +60,9 @@ class Reply:
     response_type: str
     dialog_id: int | None = None
     buttons: list[Button] = field(default_factory=list)
+    # Bilimlar bazasi javobi uchun: Telegram'da sarlavha va boʻlim belgisini chizishga.
+    category: str | None = None
+    title: str | None = None
 
 
 CONSENT_BUTTONS = [Button("Roziman", "consent_yes"), Button("Rozi emasman", "consent_no")]
@@ -172,6 +177,21 @@ def _last_question(db: Session, dialog: Dialog) -> str | None:
     )
 
 
+def kb_title(item: KbItem) -> str:
+    """Mavzu sarlavhasi — birinchi savol namunasi."""
+    return next((line.strip() for line in item.questions.splitlines() if line.strip()), item.intent)
+
+
+def list_topics(db: Session, category: str) -> list[dict]:
+    """Boʻlimdagi tekshirilgan mavzular (bot menyusi uchun)."""
+    items = db.scalars(
+        select(KbItem)
+        .where(KbItem.category == category, KbItem.verified.is_(True))
+        .order_by(KbItem.id)
+    )
+    return [{"id": item.id, "title": kb_title(item)} for item in items]
+
+
 def _format_answer(item: KbItem) -> str:
     """Javob, soʻng talaba murojaat qiladigan joy va rasmiy manba (ikkalasi ham boʻlsa ikkalasi)."""
     extra = []
@@ -192,7 +212,14 @@ def _apply_decision(db: Session, dialog: Dialog, decision: Decision, started: fl
     if decision.kind == "kb":
         text = _format_answer(decision.item)
         _log_bot(db, dialog, text, "kb", started, intent=decision.category)
-        reply = Reply(text, "kb", dialog.id, list(DIALOG_BUTTONS))
+        reply = Reply(
+            text,
+            "kb",
+            dialog.id,
+            list(DIALOG_BUTTONS),
+            category=decision.item.category,
+            title=kb_title(decision.item),
+        )
     elif decision.kind == "clarify":
         text = "Savolingiz " + " yoki ".join(f"“{o}”" for o in decision.options) + " haqidami?"
         buttons = [Button(o, f"{CATEGORY_ACTION_PREFIX}{o}") for o in decision.options]
@@ -305,6 +332,34 @@ def _answer_in_category(db: Session, user: User, category: str) -> Reply:
         )
     )
     return _apply_decision(db, dialog, decision, started)
+
+
+def _answer_kb_item(db: Session, user: User, item_id: int) -> Reply:
+    """Menyudan tanlangan mavzuga toʻgʻridan-toʻgʻri javob (tasniflagichsiz)."""
+    started = time.perf_counter()
+    item = db.get(KbItem, item_id)
+    if item is None or not item.verified:
+        return Reply(TOPIC_GONE, "system")
+    title = kb_title(item)
+    active = _active_dialog(db, user)
+    if active is not None and active.handed_off:
+        db.add(_student_message(active, title, normalize(title, load_slang(db))))
+        _log_bot(db, active, WAITING_FOR_OPERATOR, "operator", started)
+        db.commit()
+        return Reply(WAITING_FOR_OPERATOR, "operator", active.id, [END_BUTTON])
+    dialog = _open_dialog(db, user, load_settings(db))
+    db.add(
+        _student_message(
+            dialog,
+            title,
+            normalize(title, load_slang(db)),
+            intent=item.category,
+            confidence=1.0,
+        )
+    )
+    return _apply_decision(
+        db, dialog, Decision(kind="kb", item=item, category=item.category), started
+    )
 
 
 def _close(db: Session, dialog: Dialog, reason: str) -> None:
@@ -420,6 +475,8 @@ def handle_message(
         return _end_dialog(db, user)
     if action is not None and action.startswith(("resolved:", "rate:")):
         return _save_feedback(db, user, action)
+    if action is not None and action.startswith(KB_ACTION_PREFIX):
+        return _answer_kb_item(db, user, int(action.removeprefix(KB_ACTION_PREFIX)))
     if action is not None:
         return _answer_in_category(db, user, action.removeprefix(CATEGORY_ACTION_PREFIX))
     return _answer_question(db, user, text)

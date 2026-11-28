@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 _VALID_ACTIONS = {"start", "consent_yes", "consent_no", "operator", "end"} | {
     f"{CATEGORY_ACTION_PREFIX}{category}" for category in CATEGORIES
 }
-_FEEDBACK_ACTION = re.compile(r"resolved:\d{1,12}:(?:yes|no)|rate:\d{1,12}:[1-5]")
+_FEEDBACK_ACTION = re.compile(r"resolved:\d{1,12}:(?:yes|no)|rate:\d{1,12}:[1-5]|kb:\d{1,12}")
 
 
 class ChatRequest(BaseModel):
@@ -51,6 +51,8 @@ class ChatResponse(BaseModel):
     text: str
     response_type: str
     buttons: list[ButtonOut]
+    category: str | None = None
+    title: str | None = None
 
 
 @router.post("/message", response_model=ChatResponse)

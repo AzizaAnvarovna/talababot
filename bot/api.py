@@ -27,6 +27,11 @@ class ApiClient:
         response.raise_for_status()
         return response.json()
 
+    async def topics(self, category: str) -> list[dict]:
+        response = await self._client.get("/api/internal/topics", params={"category": category})
+        response.raise_for_status()
+        return response.json()
+
     async def ack(self, message_id: int) -> None:
         response = await self._client.post(f"/api/internal/messages/{message_id}/delivered")
         response.raise_for_status()
